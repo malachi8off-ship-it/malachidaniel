@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} Lyrics by {{ARTIST}}</title>
+    <meta name="description" content="Read and learn the lyrics to {{TITLE}} by {{ARTIST}} with our clean, ad-free lyrics hub.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo"><span style="color: #ffffff;">Christian</span> LyricsHub</a>
+            <div class="nav-links">
+                <button id="darkModeToggle" class="btn-icon" aria-label="Toggle Dark Mode">🌙</button>
+                <a href="request.html" class="btn-primary">Request a Song</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="song-header">
+            <h1 class="song-title">{{TITLE}}</h1>
+            <h2 class="song-artist">{{ARTIST}}</h2>
+            <div class="song-meta">
+                <span class="category-badge">{{CATEGORY}}</span>
+            </div>
+        </header>
+
+        <article class="lyrics-body">
+{{LYRICS_CONTENT}}
+        </article>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 LyricsHub. Built for music lovers.</p>
+    </footer>
+
+    <script>
+        const toggle = document.getElementById('darkModeToggle');
+        // Check for saved user preference
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            toggle.textContent = '☀️';
+        }
+
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            toggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>
