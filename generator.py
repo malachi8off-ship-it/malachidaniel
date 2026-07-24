@@ -172,3 +172,13 @@ with open(os.path.join(BASE_DIR, 'public', 'sitemap.xml'), 'w', encoding='utf-8'
     f.write(sitemap_content)
 
 print("SEO Sitemap successfully generated!")
+
+# Ensure the public folder exists just in case
+os.makedirs('public', exist_ok=True)
+
+# Copy your coming-soon.html and save it as index.html in the public folder
+try:
+    shutil.copy('coming-soon.html', 'public/index.html')
+    print("Successfully created public/index.html from coming-soon.html")
+except FileNotFoundError:
+    print("Error: coming-soon.html not found in the root directory.")
