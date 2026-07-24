@@ -182,3 +182,20 @@ try:
     print("Successfully created public/index.html from coming-soon.html")
 except FileNotFoundError:
     print("Error: coming-soon.html not found in the root directory.")
+    
+# Ensure the public folder exists
+os.makedirs('public', exist_ok=True)
+
+# Copy the HTML file
+try:
+    shutil.copy('coming-soon.html', 'public/index.html')
+    print("Successfully created public/index.html")
+except FileNotFoundError:
+    print("Error: coming-soon.html not found.")
+
+# NEW: Copy the CSS file
+try:
+    shutil.copy('templates/style.css', 'public/style.css')
+    print("Successfully copied style.css")
+except FileNotFoundError:
+    print("Error: templates/style.css not found.")
