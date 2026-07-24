@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christian LyricsHub</title>
+    <!-- This connects your exact style.css file -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo">LyricsHub</a>
+            <div class="nav-links">
+                <!-- Button to toggle dark mode -->
+                <button class="btn-icon" id="theme-toggle" title="Toggle Dark Mode">🌙</button>
+                <a href="#request-section" class="btn-primary">Request Song</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container">
+        
+        <!-- Welcome Header -->
+        <div class="song-header">
+            <h1 class="song-title">Welcome to LyricsHub</h1>
+            <p class="song-artist">Worship & Praise Resources</p>
+            <span class="category-badge">Featured Lyrics</span>
+        </div>
+
+        <!-- Lyrics Display Area -->
+        <div class="lyrics-body">Amazing grace! How sweet the sound
+That saved a wretch like me!
+I once was lost, but now am found;
+Was blind, but now I see.</div>
+
+        <br><br><br>
+
+        <!-- Song Request Form -->
+        <div id="request-section" class="form-container">
+            <h2>Request a Song</h2>
+            <p>Can't find the lyrics you are looking for? Let us know!</p>
+            
+            <form class="request-form">
+                <input type="text" name="song_title" placeholder="Song Title" required>
+                <input type="text" name="artist_name" placeholder="Artist Name" required>
+                
+                <!-- Cloudflare Turnstile matches your CSS -->
+                <div class="cf-turnstile-container">
+                    <!-- Your captcha widget will go here later -->
+                </div>
+
+                <button type="submit" class="btn-primary">Submit Request</button>
+            </form>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Christian LyricsHub. Built with Cloudflare Pages.</p>
+    </footer>
+
+    <!-- Tiny script to make the Dark Mode button work -->
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            // Switch the icon between a moon and a sun
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️';
+            } else {
+                themeToggle.textContent = '🌙';
+            }
+        });
+    </script>
+</body>
+</html>

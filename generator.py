@@ -189,3 +189,9 @@ try:
     print("Successfully copied style.css")
 except FileNotFoundError:
     print("Error: templates/style.css not found.")
+    
+    # Copy your CSS to the public folder
+shutil.copy('templates/style.css', 'public/style.css')
+
+# Copy your new homepage and name it index.html for Cloudflare
+shutil.copy('home.html', 'public/index.html')
