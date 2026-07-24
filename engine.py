@@ -2,13 +2,17 @@ import requests
 import lyricsgenius
 import os
 import re
+from dotenv import load_dotenv
 
-# 1. PASTE YOUR GENIUS TOKEN HERE
-GENIUS_TOKEN = "1KWejaYTRDJQYA5urhnH27-bavYEWLIvHv0tMbabGccOSXT11q9Mj3TxEnhXJFNE"  
+# Load the hidden environment variables
+load_dotenv()
+
+# Pull the token securely from the .env file
+GENIUS_TOKEN = os.getenv("GENIUS_TOKEN")
 TARGET_FOLDER = "raw_lyrics"
 
 genius = lyricsgenius.Genius(GENIUS_TOKEN)
-genius.remove_section_headers = True 
+genius.remove_section_headers = True
 
 def clean_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title).replace(" ", "_").lower()

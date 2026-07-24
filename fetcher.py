@@ -1,10 +1,18 @@
+import requests
 import lyricsgenius
 import os
 import re
+from dotenv import load_dotenv
 
-GENIUS_TOKEN = "1KWejaYTRDJQYA5urhnH27-bavYEWLIvHv0tMbabGccOSXT11q9Mj3TxEnhXJFNE"  # Keep your working token here
+# Load the hidden environment variables
+load_dotenv()
+
+# Pull the token securely from the .env file
+GENIUS_TOKEN = os.getenv("GENIUS_TOKEN")
+TARGET_FOLDER = "raw_lyrics"
+
 genius = lyricsgenius.Genius(GENIUS_TOKEN)
-genius.remove_section_headers = True 
+genius.remove_section_headers = True
 
 # 1. CHANGE THIS to the exact folder name where your generator.py looks for files
 TARGET_FOLDER = "raw_lyrics" 
