@@ -26,23 +26,30 @@ def fetch_and_save_lyrics(song_title, artist):
     try:
         # Search Genius for the approved song
         song = genius.search_song(song_title, artist)
-        
+
         if song:
-            if not os.path.exists(TARGET_FOLDER):
-                os.makedirs(TARGET_FOLDER)
+            # NEW STRICT MATCH CHECK: Verifies the artist before saving
+            if artist.lower() in song.artist.lower():
                 
-            filename = os.path.join(TARGET_FOLDER, f"{clean_filename(song.title)}.txt")
-            clean_lyrics = clean_genius_artifacts(song.lyrics)
-            
-            # Save exactly how your generator.py expects it
-            file_content = f"{song.title}\n{song.artist}\nlyrics\n{clean_lyrics}"
-            
-            with open(filename, "w", encoding="utf-8") as file:
-                file.write(file_content)
+                if not os.path.exists(TARGET_FOLDER):
+                    os.makedirs(TARGET_FOLDER)
                 
-            print(f"✅ Success! Saved to: {filename}\n")
+                filename = os.path.join(TARGET_FOLDER, f"{clean_filename(song.title)}.txt")
+                clean_lyrics = clean_genius_artifacts(song.lyrics)
+
+                # Save exactly how your generator.py expects it
+                file_content = f"{song.title}\n{song.artist}\nlyrics\n{clean_lyrics}"
+
+                with open(filename, "w", encoding="utf-8") as file:
+                    file.write(file_content)
+                
+                print(f"✅ Success! Saved to: {filename}\n")
+            
+            else:
+                # If Genius hands us the wrong artist, reject it
+                print(f"⏭️ Skipped: Genius returned '{song.artist}' instead of '{artist}'\n")
         else:
-            print(f"❌ Song not found on Genius. Skipping...\n")
+            print("❌ Song not found on Genius.\n")
             
     except Exception as e:
         print(f"⚠️ An error occurred during fetching: {e}\n")
