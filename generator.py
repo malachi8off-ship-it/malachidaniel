@@ -186,3 +186,12 @@ shutil.copy('templates/hub.css', 'public/hub.css')
 
 # This moves your homepage HTML
 shutil.copy('home.html', 'public/index.html')
+
+# This permanently moves your logo to the live folder
+shutil.copy('logo.png', 'public/logo.png')
+
+# Moves your coming soon page
+shutil.copy('coming-soon.html', 'public/coming-soon.html')
+
+# Moves your request page from the templates folder
+shutil.copy('templates/request.html', 'public/request.html')
