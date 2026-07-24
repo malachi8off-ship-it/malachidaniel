@@ -176,22 +176,13 @@ print("SEO Sitemap successfully generated!")
 # Ensure the public folder exists just in case
 os.makedirs('public', exist_ok=True)
 
-# Copy your coming-soon.html and save it as index.html in the public folder
-try:
-    shutil.copy('coming-soon.html', 'public/index.html')
-    print("Successfully created public/index.html from coming-soon.html")
-except FileNotFoundError:
-    print("Error: coming-soon.html not found in the root directory.")
 
-# NEW: Copy the CSS file
-try:
-    shutil.copy('templates/style.css', 'public/style.css')
-    print("Successfully copied style.css")
-except FileNotFoundError:
-    print("Error: templates/style.css not found.")
-    
-    # Copy your CSS to the public folder
+
+# This moves your original CSS so your lyrics pages don't break
 shutil.copy('templates/style.css', 'public/style.css')
 
-# Copy your new homepage and name it index.html for Cloudflare
+# This moves your NEW CSS just for the homepage
+shutil.copy('templates/hub.css', 'public/hub.css')
+
+# This moves your homepage HTML
 shutil.copy('home.html', 'public/index.html')
