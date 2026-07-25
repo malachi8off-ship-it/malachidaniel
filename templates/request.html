@@ -5,22 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request a Song | LyricsHub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Cloudflare Turnstile Script -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
     
     <nav class="navbar" style="position: relative;">
         <!-- Back Button on Navbar -->
-    <a href="index.html" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #4da6ff; text-decoration: none; font-family: var(--ui-font); font-size: 15px; font-weight: bold; display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; z-index: 10; transition: 0.3s;">
-        <span style="font-size: 18px; margin-right: 6px;">&larr;</span> Back to Library
-    </a>
+        <a href="index.html" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #4da6ff; text-decoration: none; font-family: var(--ui-font); font-size: 15px; font-weight: bold; display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; z-index: 10; transition: 0.3s;">
+            <span style="font-size: 18px; margin-right: 6px;">&larr;</span> Back to Library
+        </a>
         <div class="nav-content">
-            
             <a href="/" class="logo"><span style="color: #ffffff;">Christian</span> LyricsHub</a>
             <div class="nav-links">
                 <button id="darkModeToggle" class="btn-icon" aria-label="Toggle Dark Mode">🌙</button>
-            
             </div>
         </div>
     </nav>
@@ -30,22 +26,16 @@
             <h2>Request a Song</h2>
             <p>Can't find what you're looking for? Let us know!</p>
             
-            <!-- Web3Forms integration -->
-            <form action="https://api.web3forms.com/submit" method="POST" class="request-form">
-                <!-- Replace with your actual Web3Forms Access Key -->
-                <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
-                <input type="hidden" name="subject" value="New Song Request for LyricsHub">
+            <!-- Updated to connect to our Cloudflare Worker -->
+            <form id="dedicatedRequestForm" class="request-form">
+                <input type="text" id="reqSong" placeholder="Song Title" required>
+                <input type="text" id="reqArtist" placeholder="Artist Name">
                 
-                <input type="text" name="song_title" placeholder="Song Title" required>
-                <input type="text" name="artist_name" placeholder="Artist Name" required>
-                
-                <!-- Cloudflare Turnstile Widget -->
-                <div class="cf-turnstile-container">
-                    <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY"></div>
-                </div>
-                
-                <button type="submit" class="btn-primary">Submit Request</button>
+                <button type="submit" id="submitBtn" class="btn-primary">Submit Request</button>
             </form>
+            
+            <!-- Status message area to show success/errors -->
+            <p id="requestStatus" style="display:none; text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </div>
     </main>
 
@@ -54,6 +44,7 @@
     </footer>
 
     <script>
+        // Existing Dark Mode Logic
         const toggle = document.getElementById('darkModeToggle');
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
@@ -64,6 +55,48 @@
             const isDark = document.body.classList.contains('dark-mode');
             toggle.textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // New Cloudflare Worker Submission Logic
+        document.getElementById('dedicatedRequestForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop page from refreshing
+            
+            const statusText = document.getElementById('requestStatus');
+            const songName = document.getElementById('reqSong').value;
+            const artistName = document.getElementById('reqArtist').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Show loading state
+            statusText.style.display = "block";
+            statusText.innerText = "⏳ Sending request...";
+            statusText.style.color = "#a0aec0"; 
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Sending...";
+
+            try {
+                // Send data to our custom backend
+                const response = await fetch('/api/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ songName, artistName })
+                });
+                
+                if (response.ok) {
+                    statusText.innerText = "✅ Request received! We'll add it soon.";
+                    statusText.style.color = "#4ade80"; 
+                    document.getElementById('dedicatedRequestForm').reset();
+                } else {
+                    statusText.innerText = "❌ Something went wrong. Try again.";
+                    statusText.style.color = "#f87171"; 
+                }
+            } catch (err) {
+                statusText.innerText = "❌ Network error. Are you offline?";
+                statusText.style.color = "#f87171";
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Request";
+            }
         });
     </script>
 </body>

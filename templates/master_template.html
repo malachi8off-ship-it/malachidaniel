@@ -57,57 +57,5 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
     </script>
-    <!-- === SONG REQUEST FORM === -->
-<div style="margin-top: 40px; padding: 20px; border-top: 1px solid #ccc; background-color: #f9f9f9; text-align: center;">
-    <h3>Can't find a song? Request it!</h3>
-    <form id="songRequestForm" style="display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 300px; margin: 0 auto;">
-        <input type="text" id="reqSong" placeholder="Song Title (e.g. Interstellar Theme)" required style="width: 100%; padding: 8px;">
-        <input type="text" id="reqArtist" placeholder="Artist (Optional)" style="width: 100%; padding: 8px;">
-        <button type="submit" style="padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px;">Submit Request</button>
-    </form>
-    <p id="requestStatus" style="display:none; margin-top: 15px; font-weight: bold;"></p>
-</div>
-
-<script>
-    // This script catches the form submission and sends it to our Cloudflare Worker
-    document.getElementById('songRequestForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); // Stop the page from refreshing
-        
-        const statusText = document.getElementById('requestStatus');
-        const songName = document.getElementById('reqSong').value;
-        const artistName = document.getElementById('reqArtist').value;
-        const submitBtn = e.target.querySelector('button');
-        
-        // Visual feedback
-        statusText.style.display = "block";
-        statusText.innerText = "⏳ Sending request...";
-        submitBtn.disabled = true;
-
-        try {
-            // Call the /api/request endpoint
-            const response = await fetch('/api/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ songName, artistName })
-            });
-            
-            <!-- test -->
-            if (response.ok) {
-                statusText.innerText = "✅ Request received! We'll add it soon.";
-                statusText.style.color = "green";
-                document.getElementById('songRequestForm').reset();
-            } else {
-                statusText.innerText = "❌ Something went wrong. Try again.";
-                statusText.style.color = "red";
-            }
-        } catch (err) {
-            statusText.innerText = "❌ Network error. Are you offline?";
-            statusText.style.color = "red";
-        } finally {
-            submitBtn.disabled = false;
-        }
-    });
-</script>
-<!-- === END SONG REQUEST FORM === -->
 </body>
 </html>
