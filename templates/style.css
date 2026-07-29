@@ -1,25 +1,25 @@
 :root {
-    /* Light Mode Variables */
-    --bg-color: #faf8f5;
-    --text-color: #1f2937;
-    --accent-color: #2563eb;
-    --card-bg: #ffffff;
-    --border-color: #e5e7eb;
-    --muted-text: #6b7280;
-    
-    /* Typography */
-    --lyric-font: 'Georgia', serif;
-    --ui-font: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-body.dark-mode {
-    /* Dark Mode Variables */
+    /* Default is now Dark Mode */
     --bg-color: #111827;
     --text-color: #f3f4f6;
     --accent-color: #3b82f6;
     --card-bg: #1f2937;
     --border-color: #374151;
     --muted-text: #9ca3af;
+    
+    /* Typography */
+    --lyric-font: 'Georgia', serif;
+    --ui-font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body.light-mode {
+    /* Light Mode is now the toggle */
+    --bg-color: #faf8f5;
+    --text-color: #1f2937;
+    --accent-color: #2563eb;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --muted-text: #6b7280;
 }
 
 * { 

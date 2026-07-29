@@ -120,15 +120,18 @@ for song in songs_data:
     # 2. Add Lyrics Content (Moved above meaning)
     full_song_content += f'<div class="lyric-text" style="line-height: 1.7; font-size: 1.05rem; margin-bottom: 3rem; text-align: center;">{song["lyrics"]}</div>'
 
-    # 3. Add AI Song Meaning Box (Moved to bottom)
+   # 3. Add AI Song Meaning Box (Moved to bottom)
     if song['meaning']:
+        # Aggressively clean up any hidden AI line breaks or spaces
+        clean_meaning = " ".join([word for word in song['meaning'].split() if word])
+        
         full_song_content += f'''
-<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.25rem 1.5rem; border-radius: 10px; margin-bottom: 2rem; text-align: left;">
-    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--accent-color); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; display: block; height: auto;">
+    <h3 style="margin: 0 0 1rem 0; color: var(--accent-color); font-size: 1.1rem;">
         💡 Song Meaning & Background
     </h3>
-    <p style="margin: 0; line-height: 1.6; color: var(--text-color); font-size: 0.95rem;">
-        {song['meaning']}
+    <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem;">
+        {clean_meaning}
     </p>
 </div>
 '''

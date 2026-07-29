@@ -55,19 +55,28 @@
     </footer>
 
     <script>
-        const toggle = document.getElementById('darkModeToggle');
-        // Check for saved user preference
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            toggle.textContent = '☀️';
-        }
+    const toggle = document.getElementById('darkModeToggle');
+    
+    // The site is dark by default now. We only need to check if they previously chose 'light'
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        toggle.textContent = '🌙'; // Show moon so they know they can switch back to dark
+    } else {
+        // Default state (Dark Mode)
+        toggle.textContent = '☀️'; // Show sun so they know they can switch to light
+    }
 
-        toggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            toggle.textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-    </script>
+    toggle.addEventListener('click', () => {
+        // Toggle the light mode class on or off
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        
+        // If in light mode, show the Moon. If in dark mode, show the Sun.
+        toggle.textContent = isLight ? '🌙' : '☀️';
+        
+        // Save the user's preference
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+</script>
 </body>
 </html>
