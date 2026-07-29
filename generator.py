@@ -122,17 +122,23 @@ for song in songs_data:
 
 # 3. Add AI Song Meaning Box (Moved to bottom)
     if song['meaning']:
-        # Keep the text cleanup just to be safe
+        # Strip all hidden breaks and spaces
         clean_meaning = " ".join([word for word in song['meaning'].split() if word]).replace('<br>', '').replace('<br/>', '').strip()
         
         full_song_content += f'''
-<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; height: fit-content !important; max-height: max-content !important; align-self: flex-start; display: block;">
-    <h3 style="margin: 0 0 0.5rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">
-        💡 Song Meaning & Background
-    </h3>
-    <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">
-        {clean_meaning}
-    </p>
+<!-- INVISIBLE BUFFER WRAPPER: Absorbs the parent stretching so the card doesn't have to -->
+<div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 2rem;">
+    
+    <!-- THE ACTUAL CARD: Now protected from stretching -->
+    <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; height: max-content;">
+        <h3 style="margin: 0 0 0.75rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">
+            💡 Song Meaning & Background
+        </h3>
+        <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">
+            {clean_meaning}
+        </p>
+    </div>
+
 </div>
 '''
 
