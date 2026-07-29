@@ -52,28 +52,92 @@ master_template = master_template.replace('href="/"', 'href="../index.html"')
 
 
 # ==========================================
-# 1. LYRICS GENERATOR LOGIC
+# 1. LYRICS GENERATOR LOGIC (UPDATED PARSER & LAYOUT)
 # ==========================================
 songs_data = []
 for filename in os.listdir(lyrics_input):
     if filename.endswith('.txt'):
         with open(os.path.join(lyrics_input, filename), 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            title = lines[0].strip()
-            author = lines[1].strip()
-            lyrics = "<br>".join([line.strip() for line in lines[2:]])
+            lines = [line.strip() for line in file.readlines()]
             
-            songs_data.append({'title': title, 'author': author, 'lyrics': lyrics, 'filename': filename.replace('.txt', '.html')})
+            if len(lines) >= 2:
+                title = lines[0]
+                author = lines[1]
+                
+                meaning_text = ""
+                apple_id = ""
+                lyrics_text = ""
+                
+                # Check if the file has been processed with meaning & apple_data headers
+                if "meaning" in lines and "apple_data" in lines and "lyrics" in lines:
+                    idx_meaning = lines.index("meaning")
+                    idx_apple = lines.index("apple_data")
+                    idx_lyrics = lines.index("lyrics")
+                    
+                    meaning_lines = lines[idx_meaning + 1 : idx_apple]
+                    meaning_text = " ".join([m for m in meaning_lines if m])
+                    
+                    apple_lines = lines[idx_apple + 1 : idx_lyrics]
+                    apple_id = apple_lines[0] if apple_lines else ""
+                    
+                    lyrics_lines = lines[idx_lyrics + 1 :]
+                    
+                    # FILTER: Remove consecutive empty lines to fix massive spacing gaps
+                    cleaned_lyrics = []
+                    for line in lyrics_lines:
+                        if line == "" and (len(cleaned_lyrics) == 0 or cleaned_lyrics[-1] == ""):
+                            continue
+                        cleaned_lyrics.append(line)
+                    lyrics_text = "<br>".join(cleaned_lyrics)
+                else:
+                    # Fallback parsing for unprocessed files
+                    lyrics_text = "<br>".join([l for l in lines[2:] if l])
+                
+                songs_data.append({
+                    'title': title, 
+                    'author': author, 
+                    'meaning': meaning_text,
+                    'apple_id': apple_id,
+                    'lyrics': lyrics_text, 
+                    'filename': filename.replace('.txt', '.html')
+                })
 
 songs_data.sort(key=lambda x: x['title'])
 lyrics_cards = ""
 
 # Generate individual song pages
 for song in songs_data:
+    full_song_content = ""
+    
+    # 1. Add Interactive Apple Music Player Widget (if ID exists)
+    if song['apple_id']:
+        full_song_content += f'''
+<div style="margin-bottom: 2rem; width: 100%; display: flex; justify-content: center;">
+    <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border: 1px solid var(--border-color); background: transparent;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
+</div>
+'''
+    
+    # 2. Add Lyrics Content (Moved above meaning)
+    full_song_content += f'<div class="lyric-text" style="line-height: 1.7; font-size: 1.05rem; margin-bottom: 3rem; text-align: center;">{song["lyrics"]}</div>'
+
+    # 3. Add AI Song Meaning Box (Moved to bottom)
+    if song['meaning']:
+        full_song_content += f'''
+<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.25rem 1.5rem; border-radius: 10px; margin-bottom: 2rem; text-align: left;">
+    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--accent-color); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+        💡 Song Meaning & Background
+    </h3>
+    <p style="margin: 0; line-height: 1.6; color: var(--text-color); font-size: 0.95rem;">
+        {song['meaning']}
+    </p>
+</div>
+'''
+
     html = master_template.replace('{{TITLE}}', song['title'])\
-                          .replace('{{ARTIST}}', song['author'])\
-                          .replace('{{CATEGORY}}', 'Lyrics')\
-                          .replace('{{LYRICS_CONTENT}}', f'<p class="lyric-text">{song["lyrics"]}</p>')
+                           .replace('{{ARTIST}}', song['author'])\
+                           .replace('{{CATEGORY}}', 'Lyrics')\
+                           .replace('{{LYRICS_CONTENT}}', full_song_content)
+                           
     with open(os.path.join(lyrics_output, song['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
@@ -173,25 +237,24 @@ with open(os.path.join(BASE_DIR, 'public', 'sitemap.xml'), 'w', encoding='utf-8'
 
 print("SEO Sitemap successfully generated!")
 
-# Ensure the public folder exists just in case
+# Ensure the public folder exists
 os.makedirs('public', exist_ok=True)
 
+# Copy asset files to public directory
+if os.path.exists('templates/style.css'):
+    shutil.copy('templates/style.css', 'public/style.css')
 
+if os.path.exists('templates/hub.css'):
+    shutil.copy('templates/hub.css', 'public/hub.css')
 
-# This moves your original CSS so your lyrics pages don't break
-shutil.copy('templates/style.css', 'public/style.css')
+if os.path.exists('home.html'):
+    shutil.copy('home.html', 'public/index.html')
 
-# This moves your NEW CSS just for the homepage
-shutil.copy('templates/hub.css', 'public/hub.css')
+if os.path.exists('logo.png'):
+    shutil.copy('logo.png', 'public/logo.png')
 
-# This moves your homepage HTML
-shutil.copy('home.html', 'public/index.html')
+if os.path.exists('coming-soon.html'):
+    shutil.copy('coming-soon.html', 'public/coming-soon.html')
 
-# This permanently moves your logo to the live folder
-shutil.copy('logo.png', 'public/logo.png')
-
-# Moves your coming soon page
-shutil.copy('coming-soon.html', 'public/coming-soon.html')
-
-# Moves your request page from the templates folder
-shutil.copy('templates/request.html', 'public/request.html')
+if os.path.exists('templates/request.html'):
+    shutil.copy('templates/request.html', 'public/request.html')
