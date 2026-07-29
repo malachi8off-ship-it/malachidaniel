@@ -120,18 +120,17 @@ for song in songs_data:
     # 2. Add Lyrics Content (Moved above meaning)
     full_song_content += f'<div class="lyric-text" style="line-height: 1.7; font-size: 1.05rem; margin-bottom: 3rem; text-align: center;">{song["lyrics"]}</div>'
 
- # 3. Add AI Song Meaning Box (Moved to bottom)
+# 3. Add AI Song Meaning Box (Moved to bottom)
     if song['meaning']:
-        # Aggressively clean up hidden AI line breaks AND literal HTML <br> tags
-        clean_meaning = " ".join([word for word in song['meaning'].split() if word])
-        clean_meaning = clean_meaning.replace('<br>', '').replace('<br/>', '').strip()
+        # Keep the text cleanup just to be safe
+        clean_meaning = " ".join([word for word in song['meaning'].split() if word]).replace('<br>', '').replace('<br/>', '').strip()
         
         full_song_content += f'''
-<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; display: block !important; height: auto !important; min-height: 0 !important;">
-    <h3 style="margin: 0 0 1rem 0; color: var(--accent-color); font-size: 1.1rem;">
+<div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; height: fit-content !important; max-height: max-content !important; align-self: flex-start; display: block;">
+    <h3 style="margin: 0 0 0.5rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">
         💡 Song Meaning & Background
     </h3>
-    <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem;">
+    <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">
         {clean_meaning}
     </p>
 </div>
