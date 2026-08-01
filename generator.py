@@ -77,18 +77,34 @@ for filename in os.listdir(lyrics_input):
                 apple_id = ""
                 lyrics_text = ""
                 
-                if "meaning" in lines and "apple_data" in lines and "lyrics" in lines:
+                # Check for meaning and apple_data (even if 'lyrics' tag is missing)
+                if "meaning" in lines and "apple_data" in lines:
                     idx_meaning = lines.index("meaning")
                     idx_apple = lines.index("apple_data")
-                    idx_lyrics = lines.index("lyrics")
                     
                     meaning_lines = lines[idx_meaning + 1 : idx_apple]
                     meaning_text = " ".join([m for m in meaning_lines if m])
                     
-                    apple_lines = lines[idx_apple + 1 : idx_lyrics]
-                    apple_id = apple_lines[0] if apple_lines else ""
+                    # Handle robustly whether the "lyrics" separator exists or not
+                    if "lyrics" in lines:
+                        idx_lyrics = lines.index("lyrics")
+                        apple_lines = lines[idx_apple + 1 : idx_lyrics]
+                        apple_id = apple_lines[0] if apple_lines else ""
+                        lyrics_lines = lines[idx_lyrics + 1 :]
+                    else:
+                        # Auto-repair for malformed files missing the 'lyrics' tag
+                        apple_id = lines[idx_apple + 1] if len(lines) > idx_apple + 1 else ""
+                        raw_lyrics = lines[idx_apple + 2 :]
+                        
+                        # Strip duplicated title/artist if AI accidentally appended the original file
+                        if len(raw_lyrics) >= 2 and raw_lyrics[0] == title and raw_lyrics[1] == author:
+                            lyrics_lines = raw_lyrics[2:]
+                        else:
+                            lyrics_lines = raw_lyrics
                     
-                    lyrics_lines = lines[idx_lyrics + 1 :]
+                    # STRICT FILTER: Ignore "NONE" or empty IDs
+                    apple_id = apple_id if apple_id.upper() != "NONE" else ""
+                    
                     cleaned_lyrics = []
                     for line in lyrics_lines:
                         if line == "" and (len(cleaned_lyrics) == 0 or cleaned_lyrics[-1] == ""):
@@ -96,9 +112,10 @@ for filename in os.listdir(lyrics_input):
                         cleaned_lyrics.append(line)
                     lyrics_text = "<br>".join(cleaned_lyrics)
                 else:
+                    # True fallback for completely unprocessed files
                     lyrics_text = "<br>".join([l for l in lines[2:] if l])
                 
-                # Use our new smart detector
+                # Use our smart detector
                 lang_attr = detect_language(title + " " + meaning_text, lyrics_text)
                 
                 songs_data.append({

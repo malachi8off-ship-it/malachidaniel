@@ -132,7 +132,7 @@ def process_files():
         if not meaning:
             continue # Skip to next file if all engines fail
             
-        # 3. Rebuild the file structure
+      # 3. Rebuild the file structure
         new_content = [
             f"{title}\n",
             f"{artist}\n",
@@ -140,12 +140,14 @@ def process_files():
             f"{meaning}\n",
             "apple_data\n",
             f"{track_id}\n",
+            "lyrics\n"   # <-- THIS PREVENTS THE UI GLITCH
         ]
         
-        lyrics_start_index = 0
+        # Determine where the actual lyrics start in the original file
+        lyrics_start_index = 2  # Default fallback: skip original title/artist
         for i, line in enumerate(lines):
             if line.strip().lower() == "lyrics":
-                lyrics_start_index = i
+                lyrics_start_index = i + 1  # Skip the old 'lyrics' tag since we just added it
                 break
                 
         new_content.extend(lines[lyrics_start_index:])
