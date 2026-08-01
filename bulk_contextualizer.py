@@ -119,8 +119,13 @@ def process_files():
         track_id = search_apple_music(title, artist)
         print(f"  -> Apple Track ID: {track_id}")
         
-        # 2. Fetch AI Meaning
-        prompt = f"Write a 2 to 3 sentence summary about the Christian worship song '{title}' by '{artist}', including its core meaning and biblical context. Keep it objective, informative, and format it as a single paragraph."
+        # 2. Fetch AI Meaning (UPDATED PROMPT)
+        prompt = (
+            f"Write a 2 to 3 sentence summary about the Christian worship song '{title}' by '{artist}', "
+            f"including its core meaning and biblical context. "
+            f"IMPORTANT: If the song is sung in Hindi, Malayalam, Hinglish, or Manglish, you MUST explicitly "
+            f"mention that specific language/style in your summary. Keep it objective, informative, and format it as a single paragraph."
+        )
         
         meaning = fetch_ai_meaning(prompt, filename)
         

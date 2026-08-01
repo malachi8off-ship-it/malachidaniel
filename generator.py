@@ -1,6 +1,7 @@
 import os
 import datetime
 import shutil
+import re
 
 # --- BULLETPROOF PATHS ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,17 +28,14 @@ if not os.path.exists(template_path):
     print(f"ERROR: Cannot find your template at {template_path}. Make sure it exists!")
     exit()
 
-# Copy the modern style.css to the public folder
 if os.path.exists(css_input):
     shutil.copy2(css_input, css_output)
 else:
     print(f"WARNING: Cannot find {css_input}. Styling will be broken!")
 
-# Copy the request.html to the public folder
 if os.path.exists(request_input):
     shutil.copy2(request_input, request_output)
 elif os.path.exists(os.path.join(BASE_DIR, 'request.html')):
-    # Fallback just in case you saved it in the root folder instead of /templates
     shutil.copy2(os.path.join(BASE_DIR, 'request.html'), request_output)
 else:
     print("WARNING: Cannot find request.html!")
@@ -45,14 +43,31 @@ else:
 with open(template_path, 'r', encoding='utf-8') as f:
     master_template = f.read()
 
-# Fix routing paths for subfolders automatically
 master_template = master_template.replace('href="style.css"', 'href="../style.css"')
 master_template = master_template.replace('href="request.html"', 'href="../request.html"')
 master_template = master_template.replace('href="/"', 'href="../index.html"')
 
+def detect_language(text_to_check, lyrics_text=""):
+    """Smart auto-detection for languages based on keywords and unicode blocks."""
+    text_to_check = text_to_check.lower()
+    
+    # Check for specific transliteration keywords first
+    if "manglish" in text_to_check:
+        return "manglish"
+    if "hinglish" in text_to_check:
+        return "hinglish"
+        
+    # Check for native Malayalam characters (\u0D00-\u0D7F) or keywords
+    if "malayalam" in text_to_check or any('\u0D00' <= c <= '\u0D7F' for c in lyrics_text):
+        return "malayalam"
+    # Check for native Devanagari/Hindi characters (\u0900-\u097F) or keywords
+    elif "hindi" in text_to_check or any('\u0900' <= c <= '\u097F' for c in lyrics_text):
+        return "hindi"
+    
+    return "english"
 
 # ==========================================
-# 1. LYRICS GENERATOR LOGIC (UPDATED PARSER & LAYOUT)
+# 1. LYRICS GENERATOR LOGIC
 # ==========================================
 songs_data = []
 for filename in os.listdir(lyrics_input):
@@ -63,12 +78,10 @@ for filename in os.listdir(lyrics_input):
             if len(lines) >= 2:
                 title = lines[0]
                 author = lines[1]
-                
                 meaning_text = ""
                 apple_id = ""
                 lyrics_text = ""
                 
-                # Check if the file has been processed with meaning & apple_data headers
                 if "meaning" in lines and "apple_data" in lines and "lyrics" in lines:
                     idx_meaning = lines.index("meaning")
                     idx_apple = lines.index("apple_data")
@@ -81,8 +94,6 @@ for filename in os.listdir(lyrics_input):
                     apple_id = apple_lines[0] if apple_lines else ""
                     
                     lyrics_lines = lines[idx_lyrics + 1 :]
-                    
-                    # FILTER: Remove consecutive empty lines to fix massive spacing gaps
                     cleaned_lyrics = []
                     for line in lyrics_lines:
                         if line == "" and (len(cleaned_lyrics) == 0 or cleaned_lyrics[-1] == ""):
@@ -90,8 +101,10 @@ for filename in os.listdir(lyrics_input):
                         cleaned_lyrics.append(line)
                     lyrics_text = "<br>".join(cleaned_lyrics)
                 else:
-                    # Fallback parsing for unprocessed files
                     lyrics_text = "<br>".join([l for l in lines[2:] if l])
+                
+                # Use our new smart detector
+                lang_attr = detect_language(title + " " + meaning_text, lyrics_text)
                 
                 songs_data.append({
                     'title': title, 
@@ -99,49 +112,34 @@ for filename in os.listdir(lyrics_input):
                     'meaning': meaning_text,
                     'apple_id': apple_id,
                     'lyrics': lyrics_text, 
-                    'filename': filename.replace('.txt', '.html')
+                    'filename': filename.replace('.txt', '.html'),
+                    'language': lang_attr
                 })
 
 songs_data.sort(key=lambda x: x['title'])
 lyrics_cards = ""
 
-# Generate individual song pages
 for song in songs_data:
     full_song_content = ""
     
-    # 1. Add Interactive Apple Music Player Widget (if ID exists)
     if song['apple_id']:
         full_song_content += f'''
 <div style="margin-bottom: 2rem; width: 100%; display: flex; justify-content: center;">
     <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border: 1px solid var(--border-color); background: transparent;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
 </div>
 '''
-    
-    # 2. Add Lyrics Content (Moved above meaning)
     full_song_content += f'<div class="lyric-text" style="line-height: 1.7; font-size: 1.05rem; margin-bottom: 3rem; text-align: center;">{song["lyrics"]}</div>'
 
-# 3. Add AI Song Meaning Box (Moved to bottom)
     if song['meaning']:
-        # Strip all hidden breaks and spaces
         clean_meaning = " ".join([word for word in song['meaning'].split() if word]).replace('<br>', '').replace('<br/>', '').strip()
-        
         full_song_content += f'''
-<!-- INVISIBLE BUFFER WRAPPER: Absorbs the parent stretching so the card doesn't have to -->
 <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 2rem;">
-    
-    <!-- THE ACTUAL CARD: Now protected from stretching -->
     <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; height: max-content;">
-        <h3 style="margin: 0 0 0.75rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">
-            💡 Song Meaning & Background
-        </h3>
-        <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">
-            {clean_meaning}
-        </p>
+        <h3 style="margin: 0 0 0.75rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">💡 Song Meaning & Background</h3>
+        <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">{clean_meaning}</p>
     </div>
-
 </div>
 '''
-
     html = master_template.replace('{{TITLE}}', song['title'])\
                            .replace('{{ARTIST}}', song['author'])\
                            .replace('{{CATEGORY}}', 'Lyrics')\
@@ -150,23 +148,44 @@ for song in songs_data:
     with open(os.path.join(lyrics_output, song['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
-    # Updated to use CSS variables for dark mode compatibility
-    lyrics_cards += f'<a href="{song["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{song["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;"><strong>By:</strong> {song["author"]}</p></article></a>'
+    # Added the data-language attribute to the card
+    lyrics_cards += f'<a href="{song["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card" data-language="{song["language"]}"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{song["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;"><strong>By:</strong> {song["author"]}</p></article></a>'
 
-# Generate the Lyrics Search (Index) Page
+# UI Updated with a Flexbox layout for Search + Dropdown Filter
 search_content = f"""
-<div style="margin-bottom: 25px;">
-    <input type="text" id="searchInput" placeholder="Search for a song..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-family: var(--ui-font); font-size: 1rem;">
+<div style="margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <input type="text" id="searchInput" placeholder="Search for a song..." style="flex: 1; min-width: 200px; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-family: var(--ui-font); font-size: 1rem;">
+    
+    <select id="langFilter" style="padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-family: var(--ui-font); font-size: 1rem; cursor: pointer;">
+        <option value="all">🌍 All Languages</option>
+        <option value="english">English</option>
+        <option value="hindi">Hindi</option>
+        <option value="hinglish">Hinglish</option>
+        <option value="malayalam">Malayalam</option>
+        <option value="manglish">Manglish</option>
+    </select>
 </div>
 <div>{lyrics_cards}</div>
+
 <script>
-    document.getElementById('searchInput').addEventListener('keyup', function() {{
-        let input = this.value.toLowerCase();
+    function filterItems() {{
+        let searchText = document.getElementById('searchInput').value.toLowerCase();
+        let selectedLang = document.getElementById('langFilter').value;
         let cards = document.getElementsByClassName('interactive-card');
+        
         for (let i = 0; i < cards.length; i++) {{
-            cards[i].parentElement.style.display = cards[i].innerText.toLowerCase().includes(input) ? "" : "none";
+            let cardText = cards[i].innerText.toLowerCase();
+            let cardLang = cards[i].getAttribute('data-language');
+            
+            let matchesSearch = cardText.includes(searchText);
+            let matchesLang = (selectedLang === 'all' || cardLang === selectedLang);
+            
+            cards[i].parentElement.style.display = (matchesSearch && matchesLang) ? "" : "none";
         }}
-    }});
+    }}
+
+    document.getElementById('searchInput').addEventListener('input', filterItems);
+    document.getElementById('langFilter').addEventListener('change', filterItems);
 </script>
 """
 index_html = master_template.replace('{{TITLE}}', 'Lyrics Archive')\
@@ -186,15 +205,18 @@ for filename in os.listdir(karaoke_input):
         with open(os.path.join(karaoke_input, filename), 'r', encoding='utf-8') as file:
             lines = [line.strip() for line in file.readlines() if line.strip() != ""]
             if len(lines) >= 3:
+                title = lines[0]
                 raw_link = lines[1]
+                desc = "<br>".join(lines[2:])
                 video_id = raw_link.split("v=")[1][:11] if "v=" in raw_link else (raw_link.split("youtu.be/")[1][:11] if "youtu.be/" in raw_link else raw_link)
                 
-                karaoke_data.append({'title': lines[0], 'video_id': video_id, 'desc': "<br>".join(lines[2:]), 'filename': filename.replace('.txt', '.html')})
+                lang_attr = detect_language(title + " " + desc)
+                
+                karaoke_data.append({'title': title, 'video_id': video_id, 'desc': desc, 'filename': filename.replace('.txt', '.html'), 'language': lang_attr})
 
 karaoke_data.sort(key=lambda x: x['title'])
 karaoke_cards = ""
 
-# Generate individual karaoke pages
 for track in karaoke_data:
     iframe_content = f"""
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px; background-color: #000; border: 1px solid var(--border-color);">
@@ -209,10 +231,8 @@ for track in karaoke_data:
     with open(os.path.join(karaoke_output, track['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
-    # Updated to use CSS variables for dark mode compatibility
-    karaoke_cards += f'<a href="{track["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{track["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;">▶ Play Track</p></article></a>'
+    karaoke_cards += f'<a href="{track["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card" data-language="{track["language"]}"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{track["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;">▶ Play Track</p></article></a>'
 
-# Generate the Karaoke Search (Index) Page
 k_search_content = search_content.replace('Search for a song...', 'Search for a karaoke track...').replace(lyrics_cards, karaoke_cards)
 k_index_html = master_template.replace('{{TITLE}}', 'Karaoke Tracks')\
                               .replace('{{ARTIST}}', 'All Available Karaoke')\
@@ -246,38 +266,16 @@ with open(os.path.join(BASE_DIR, 'public', 'sitemap.xml'), 'w', encoding='utf-8'
 
 print("SEO Sitemap successfully generated!")
 
-# Ensure the public folder exists
 os.makedirs('public', exist_ok=True)
 
-# Copy asset files to public directory
-if os.path.exists('templates/style.css'):
-    shutil.copy('templates/style.css', 'public/style.css')
+if os.path.exists('templates/style.css'): shutil.copy('templates/style.css', 'public/style.css')
+if os.path.exists('templates/hub.css'): shutil.copy('templates/hub.css', 'public/hub.css')
+if os.path.exists('home.html'): shutil.copy('home.html', 'public/index.html')
+if os.path.exists('logo.png'): shutil.copy('logo.png', 'public/logo.png')
+if os.path.exists('coming-soon.html'): shutil.copy('coming-soon.html', 'public/coming-soon.html')
+if os.path.exists('templates/request.html'): shutil.copy('templates/request.html', 'public/request.html')
 
-if os.path.exists('templates/hub.css'):
-    shutil.copy('templates/hub.css', 'public/hub.css')
-
-if os.path.exists('home.html'):
-    shutil.copy('home.html', 'public/index.html')
-
-if os.path.exists('logo.png'):
-    shutil.copy('logo.png', 'public/logo.png')
-
-if os.path.exists('coming-soon.html'):
-    shutil.copy('coming-soon.html', 'public/coming-soon.html')
-
-if os.path.exists('templates/request.html'):
-    shutil.copy('templates/request.html', 'public/request.html')
-
-# --- NEW FAVICON ADDITIONS START HERE ---
-if os.path.exists('favicon.ico'):
-    shutil.copy('favicon.ico', 'public/favicon.ico')
-
-if os.path.exists('apple-touch-icon.png'):
-    shutil.copy('apple-touch-icon.png', 'public/apple-touch-icon.png')
-
-if os.path.exists('favicon-32x32.png'):
-    shutil.copy('favicon-32x32.png', 'public/favicon-32x32.png')
-
-if os.path.exists('favicon-16x16.png'):
-    shutil.copy('favicon-16x16.png', 'public/favicon-16x16.png')
-# --- NEW FAVICON ADDITIONS END HERE ---
+if os.path.exists('favicon.ico'): shutil.copy('favicon.ico', 'public/favicon.ico')
+if os.path.exists('apple-touch-icon.png'): shutil.copy('apple-touch-icon.png', 'public/apple-touch-icon.png')
+if os.path.exists('favicon-32x32.png'): shutil.copy('favicon-32x32.png', 'public/favicon-32x32.png')
+if os.path.exists('favicon-16x16.png'): shutil.copy('favicon-16x16.png', 'public/favicon-16x16.png')

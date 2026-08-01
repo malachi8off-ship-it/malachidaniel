@@ -6,8 +6,9 @@ Purpose: Pipeline automation for lyrics, Christian worship context, metadata,
          karaoke tracks, and static site generation.
 
 -------------------------------------------------------------------------------
-1. FILE SCHEMA STANDARDS
+1. FILE SCHEMA & ASSET STANDARDS
 -------------------------------------------------------------------------------
+=== A. RAW TEXT FILES ===
 Raw files in `raw_lyrics/` must conform to this line structure once processed:
     Line 1: Song Title
     Line 2: Artist Name
@@ -22,6 +23,13 @@ Raw files in `raw_karaoke/` follow this structure:
     Line 1: Track Title
     Line 2: YouTube URL
     Line 3+: [Description]
+
+=== B. STATIC ASSETS (FAVICONS) ===
+For Google Search indexing and browser tabs, the root directory must contain these exact files generated from a 512x512px master logo:
+    1. `favicon.ico` (For legacy browsers)
+    2. `apple-touch-icon.png` (180x180px for iOS home screens)
+    3. `favicon-32x32.png` (Standard desktop browser tab)
+    4. `favicon-16x16.png` (Small desktop browser tab)
 
 -------------------------------------------------------------------------------
 2. ENGINE & SCRIPT CATALOG
@@ -104,7 +112,7 @@ Raw files in `raw_karaoke/` follow this structure:
     - What it does: Parses all `.txt` files in `raw_lyrics/` and `raw_karaoke/`. 
       Injects them into `master_template.html`. Generates `index.html` search pages, 
       Apple Music iframes, YouTube iframes, `sitemap.xml`, and copies CSS/assets 
-      into the `public/` folder.
+      (including all Favicon images) into the `public/` folder.
     - Command: python generator.py
 
 
@@ -165,6 +173,18 @@ Goal: You know the lyrics exist, but `fetcher.py` isn't grabbing the right versi
    to make sure it's the right version, and press 'y' to save.
 3. Process & Build:
    $ python bulk_contextualizer.py
+   $ python generator.py
+
+===============================================================================
+SCENARIO E: Updating Site Favicons / Logo
+===============================================================================
+Goal: You want to change the icon that appears in Google Search and browser tabs.
+
+1. Create a 512x512px transparent PNG of your new logo.
+2. Run it through a Favicon Generator (like favicon.io) to get the required pack.
+3. Extract `favicon.ico`, `apple-touch-icon.png`, `favicon-32x32.png`, and 
+   `favicon-16x16.png` directly into your project's root folder.
+4. Rebuild the site so the new assets are pushed to `public/`:
    $ python generator.py
 
 
