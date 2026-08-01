@@ -1,0 +1,177 @@
+===============================================================================
+                       MALACHI DANIEL - SYSTEM MANUAL
+===============================================================================
+Project: malachidaniel.com
+Purpose: Pipeline automation for lyrics, Christian worship context, metadata,
+         karaoke tracks, and static site generation.
+
+-------------------------------------------------------------------------------
+1. FILE SCHEMA STANDARDS
+-------------------------------------------------------------------------------
+Raw files in `raw_lyrics/` must conform to this line structure once processed:
+    Line 1: Song Title
+    Line 2: Artist Name
+    Line 3: meaning
+    Line 4: [AI summary of meaning & biblical context]
+    Line 5: apple_data
+    Line 6: [Apple Music Track ID or "NONE"]
+    Line 7: lyrics
+    Line 8+: [Lyrics content...]
+
+Raw files in `raw_karaoke/` follow this structure:
+    Line 1: Track Title
+    Line 2: YouTube URL
+    Line 3+: [Description]
+
+-------------------------------------------------------------------------------
+2. ENGINE & SCRIPT CATALOG
+-------------------------------------------------------------------------------
+
+=== A. CONTENT CREATION (MANUAL INPUT) ===
+
+[1] add_lyrics.py
+    - Purpose: Interactive CLI for manually adding new lyrics.
+    - What it does: Prompts for a Song Title, Artist, and multiline Lyrics. Saves 
+      it as a clean `.txt` file (slugified) in `raw_lyrics/`.
+    - Command: python add_lyrics.py
+
+[2] add_karaoke.py
+    - Purpose: Interactive CLI for adding YouTube karaoke links.
+    - What it does: Prompts for Track Title, YouTube Link, and multiline Description. 
+      Saves it properly formatted into `raw_karaoke/`.
+    - Command: python add_karaoke.py
+
+=== B. CONTENT SCRAPERS & FETCHERS ===
+
+[3] fetcher.py
+    - Purpose: Direct Genius API lyric scraper.
+    - What it does: Asks for Artist and Title, searches Genius, cleans the text 
+      (removes "Embed" numbers), and saves it straight to `raw_lyrics/`.
+    - Command: python fetcher.py
+
+[4] interactive_engine.py
+    - Purpose: Advanced search-and-preview Genius tool.
+    - What it does: Lets you search by keyword, lists all matching hits from Genius, 
+      lets you pick one by number, previews the first 4 lines, and asks to save.
+    - Command: python interactive_engine.py
+
+[5] engine.py
+    - Purpose: iTunes Top Charts trend scraper.
+    - What it does: Connects to iTunes Christian & Gospel Top 50. Compares the 
+      chart to your existing `raw_lyrics/`. Prompts you to fetch lyrics via 
+      Genius for any trending songs you don't already have.
+    - Command: python engine.py
+
+[6] discover.py
+    - Purpose: Artist discography gap-filler.
+    - What it does: You type an Artist name. It checks their top 15 most popular 
+      songs on Genius against what you already have in `raw_lyrics/`, and asks if 
+      you want to download the missing ones.
+    - Command: python discover.py
+
+=== C. AI PIPELINE & PROCESSING ===
+
+[7] bulk_contextualizer.py
+    - Purpose: Full-automation pipeline with API Key Pooling.
+    - What it does: Scans `raw_lyrics/` for unprocessed songs. Fetches Apple Music 
+      Track IDs via iTunes API. Uses Gemini, Groq, or OpenRouter (randomly rotating) 
+      to generate Biblical context and injects it into the file.
+    - Command: python bulk_contextualizer.py
+
+[8] export_pending.py
+    - Purpose: Semi-automated exporter for manual/browser AI processing.
+    - What it does: Finds all files missing `meaning` fields. Constructs a batch 
+      JSON prompt and uses `clip.exe` to copy it directly to your clipboard.
+    - Command: python export_pending.py
+
+[9] import_meanings.py
+    - Purpose: Importer for AI output from `export_pending.py`.
+    - What it does: Checks for `completed_meanings.json`. If missing, asks you 
+      to paste the AI's JSON output directly into the terminal, then updates all 
+      the corresponding text files with the new meanings.
+    - Command: python import_meanings.py
+
+=== D. DIAGNOSTICS & BUILD SYSTEM ===
+
+[10] check_models.py
+    - Purpose: Basic Gemini API diagnostic.
+    - What it does: Checks if your Gemini API key is valid and prints out all 
+      available model names for your region.
+    - Command: python check_models.py
+
+[11] generator.py
+    - Purpose: Static HTML Site Builder.
+    - What it does: Parses all `.txt` files in `raw_lyrics/` and `raw_karaoke/`. 
+      Injects them into `master_template.html`. Generates `index.html` search pages, 
+      Apple Music iframes, YouTube iframes, `sitemap.xml`, and copies CSS/assets 
+      into the `public/` folder.
+    - Command: python generator.py
+
+
+-------------------------------------------------------------------------------
+3. PRACTICAL WORKFLOW SCENARIOS
+-------------------------------------------------------------------------------
+
+===============================================================================
+SCENARIO A: Expanding the Archive with Trending Hits
+===============================================================================
+Goal: You want to add the current most popular Christian songs to the site.
+
+1. Run the iTunes charts engine:
+   $ python engine.py
+   (Press 'y' to download lyrics for any trending songs you want.)
+2. Run the AI pipeline to add meanings and Apple Music widgets:
+   $ python bulk_contextualizer.py
+3. Rebuild the website:
+   $ python generator.py
+
+===============================================================================
+SCENARIO B: Completing an Artist's Discography
+===============================================================================
+Goal: You realize you only have 2 songs by "Hillsong Worship" and want more.
+
+1. Run the discovery script:
+   $ python discover.py
+2. Enter "Hillsong Worship". The script will skip what you have and offer you 
+   their other top hits to download.
+3. Fetch Apple IDs and AI meanings:
+   $ python bulk_contextualizer.py
+4. Update the live HTML:
+   $ python generator.py
+
+===============================================================================
+SCENARIO C: API Key Limits Hit (Zero-Cost Workflow)
+===============================================================================
+Goal: You downloaded 50 songs, but your APIs are exhausted or throwing errors.
+
+1. Export missing songs to your Windows clipboard:
+   $ python export_pending.py
+2. Open ChatGPT/Gemini in your web browser, press Ctrl+V, and hit Enter.
+3. Copy the JSON response from the AI.
+4. Run the importer:
+   $ python import_meanings.py
+   (Paste the JSON into the terminal, press Enter, then Ctrl+Z and Enter).
+5. Generate the site:
+   $ python generator.py
+
+===============================================================================
+SCENARIO D: Adding a Specific Hard-to-Find Song
+===============================================================================
+Goal: You know the lyrics exist, but `fetcher.py` isn't grabbing the right version.
+
+1. Launch the interactive Genius engine:
+   $ python interactive_engine.py
+2. Search the title. Pick from the list of results, review the 4-line preview 
+   to make sure it's the right version, and press 'y' to save.
+3. Process & Build:
+   $ python bulk_contextualizer.py
+   $ python generator.py
+
+
+-------------------------------------------------------------------------------
+4. TEMPLATE FOR ADDING NEW ENGINES (Copy & Append Below)
+-------------------------------------------------------------------------------
+[#] script_name.py
+    - Purpose: [Brief summary]
+    - What it does: [Detailed step-by-step functionality]
+    - Command: python script_name.py

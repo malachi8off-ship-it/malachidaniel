@@ -267,3 +267,17 @@ if os.path.exists('coming-soon.html'):
 
 if os.path.exists('templates/request.html'):
     shutil.copy('templates/request.html', 'public/request.html')
+
+# --- NEW FAVICON ADDITIONS START HERE ---
+if os.path.exists('favicon.ico'):
+    shutil.copy('favicon.ico', 'public/favicon.ico')
+
+if os.path.exists('apple-touch-icon.png'):
+    shutil.copy('apple-touch-icon.png', 'public/apple-touch-icon.png')
+
+if os.path.exists('favicon-32x32.png'):
+    shutil.copy('favicon-32x32.png', 'public/favicon-32x32.png')
+
+if os.path.exists('favicon-16x16.png'):
+    shutil.copy('favicon-16x16.png', 'public/favicon-16x16.png')
+# --- NEW FAVICON ADDITIONS END HERE ---
