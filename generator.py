@@ -51,17 +51,12 @@ def detect_language(text_to_check, lyrics_text=""):
     """Smart auto-detection for languages based on keywords and unicode blocks."""
     text_to_check = text_to_check.lower()
     
-    # Check for specific transliteration keywords first
-    if "manglish" in text_to_check:
-        return "manglish"
-    if "hinglish" in text_to_check:
-        return "hinglish"
-        
-    # Check for native Malayalam characters (\u0D00-\u0D7F) or keywords
-    if "malayalam" in text_to_check or any('\u0D00' <= c <= '\u0D7F' for c in lyrics_text):
+    # Check for Malayalam/Manglish or native characters (\u0D00-\u0D7F)
+    if "malayalam" in text_to_check or "manglish" in text_to_check or any('\u0D00' <= c <= '\u0D7F' for c in lyrics_text):
         return "malayalam"
-    # Check for native Devanagari/Hindi characters (\u0900-\u097F) or keywords
-    elif "hindi" in text_to_check or any('\u0900' <= c <= '\u097F' for c in lyrics_text):
+        
+    # Check for Hindi/Hinglish or native characters (\u0900-\u097F)
+    elif "hindi" in text_to_check or "hinglish" in text_to_check or any('\u0900' <= c <= '\u097F' for c in lyrics_text):
         return "hindi"
     
     return "english"
@@ -160,9 +155,7 @@ search_content = f"""
         <option value="all">🌍 All Languages</option>
         <option value="english">English</option>
         <option value="hindi">Hindi</option>
-        <option value="hinglish">Hinglish</option>
         <option value="malayalam">Malayalam</option>
-        <option value="manglish">Manglish</option>
     </select>
 </div>
 <div>{lyrics_cards}</div>
