@@ -9,11 +9,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- CONFIGURATION ---
-# Fetch the key securely from the environment
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 client = genai.Client(api_key=GEMINI_API_KEY)
-MODEL_ID = 'gemini-3.5-flash-lite'
+
+# CORRECTED MODEL NAME
+MODEL_ID = 'gemini-2.5-flash'
 
 DIR_PATH = "raw_lyrics"
 
@@ -23,6 +24,7 @@ def search_apple_music(title, artist):
     url = f"https://itunes.apple.com/search?term={query}&entity=song&limit=1"
     
     try:
+        # Added a strict timeout so Apple Music can never hang the script
         response = requests.get(url, timeout=5)
         data = response.json()
         
@@ -63,7 +65,6 @@ def process_files():
         prompt = f"Write a 2 to 3 sentence summary about the Christian worship song '{title}' by '{artist}', including its core meaning and biblical context. Keep it objective, informative, and format it as a single paragraph."
         
         try:
-            # NEW SYNTAX FOR GOOGLE GENAI SDK
             response = client.models.generate_content(
                 model=MODEL_ID,
                 contents=prompt
@@ -98,8 +99,8 @@ def process_files():
                 
             print(f"✅ Successfully updated {filename}\n")
             
-            # Pause for 4 seconds to respect rate limits
-            time.sleep(8) 
+            # Reduced from 8 seconds to 2 seconds to speed up the pipeline
+            time.sleep(2) 
             
         except Exception as e:
             print(f"❌ Error processing AI for {filename}: {e}\n")
