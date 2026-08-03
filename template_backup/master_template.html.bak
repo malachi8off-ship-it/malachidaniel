@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} Lyrics by {{ARTIST}}</title>
+                <!-- Favicons -->
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+            <!-- Google Tag Manager -->
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-NF3PK5NV');</script>
+        <!-- End Google Tag Manager -->
+    <meta name="description" content="Read and learn the lyrics to {{TITLE}} by {{ARTIST}} with our clean, ad-free lyrics hub.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+            <!-- Google Tag Manager (noscript) -->
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NF3PK5NV"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo"><span style="color: #ffffff;">Christian</span> LyricsHub</a>
+            <div class="nav-links">
+                <button id="darkModeToggle" class="btn-icon" aria-label="Toggle Dark Mode">🌙</button>
+                <a href="request.html" class="btn-primary">Request a Song</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+       
+         <!-- Back Button -->
+        <div style="margin: 20px 0; text-align: left;">
+            <a href="/" style="display: inline-block; background-color: #2980b9; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;">
+                ← Back to Main Hub
+            </a>
+        </div>
+        <header class="song-header">
+            <h1 class="song-title">{{TITLE}}</h1>
+            <h2 class="song-artist">{{ARTIST}}</h2>
+            <div class="song-meta">
+                <span class="category-badge">{{CATEGORY}}</span>
+            </div>
+        </header>
+
+        <article class="lyrics-body">
+{{LYRICS_CONTENT}}
+        </article>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 LyricsHub. Built for music lovers.</p>
+    </footer>
+
+    <script>
+    const toggle = document.getElementById('darkModeToggle');
+    
+    // The site is dark by default now. We only need to check if they previously chose 'light'
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        toggle.textContent = '🌙'; // Show moon so they know they can switch back to dark
+    } else {
+        // Default state (Dark Mode)
+        toggle.textContent = '☀️'; // Show sun so they know they can switch to light
+    }
+
+    toggle.addEventListener('click', () => {
+        // Toggle the light mode class on or off
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        
+        // If in light mode, show the Moon. If in dark mode, show the Sun.
+        toggle.textContent = isLight ? '🌙' : '☀️';
+        
+        // Save the user's preference
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+</script>
+</body>
+</html>

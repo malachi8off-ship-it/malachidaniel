@@ -51,11 +51,11 @@ def detect_language(text_to_check, lyrics_text=""):
     """Smart auto-detection for languages based on keywords and unicode blocks."""
     text_to_check = text_to_check.lower()
     
-    # Check for Malayalam/Manglish or native characters
+    # Check for Malayalam/Manglish or native characters (\u0D00-\u0D7F)
     if "malayalam" in text_to_check or "manglish" in text_to_check or any('\u0D00' <= c <= '\u0D7F' for c in lyrics_text):
         return "malayalam"
         
-    # Check for Hindi/Hinglish or native characters
+    # Check for Hindi/Hinglish or native characters (\u0900-\u097F)
     elif "hindi" in text_to_check or "hinglish" in text_to_check or any('\u0900' <= c <= '\u097F' for c in lyrics_text):
         return "hindi"
     
@@ -131,24 +131,24 @@ for filename in os.listdir(lyrics_input):
 songs_data.sort(key=lambda x: x['title'])
 lyrics_cards = ""
 
-for i, song in enumerate(songs_data):
+for song in songs_data:
     full_song_content = ""
     
     if song['apple_id']:
         full_song_content += f'''
-<div class="player-container">
-    <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" class="apple-iframe" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
+<div style="margin-bottom: 2rem; width: 100%; display: flex; justify-content: center;">
+    <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" style="width:100%;max-width:660px;overflow:hidden;border-radius:12px;border: 1px solid var(--border-color); background: transparent;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
 </div>
 '''
-    full_song_content += f'<div class="lyric-text">{song["lyrics"]}</div>'
+    full_song_content += f'<div class="lyric-text" style="line-height: 1.7; font-size: 1.05rem; margin-bottom: 3rem; text-align: center;">{song["lyrics"]}</div>'
 
     if song['meaning']:
         clean_meaning = " ".join([word for word in song['meaning'].split() if word]).replace('<br>', '').replace('<br/>', '').strip()
         full_song_content += f'''
-<div class="meaning-container">
-    <div class="meaning-card">
-        <h3>&#128161; Song Meaning & Background</h3>
-        <p>{clean_meaning}</p>
+<div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 2rem;">
+    <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 10px; height: max-content;">
+        <h3 style="margin: 0 0 0.75rem 0; color: var(--accent-color); font-size: 1.1rem; padding: 0;">💡 Song Meaning & Background</h3>
+        <p style="margin: 0; line-height: 1.7; color: var(--text-color); font-size: 0.95rem; padding: 0;">{clean_meaning}</p>
     </div>
 </div>
 '''
@@ -160,78 +160,22 @@ for i, song in enumerate(songs_data):
     with open(os.path.join(lyrics_output, song['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
-    # NEW UI: Generate the rich media card structure
-    track_num = str(i + 1).zfill(2)
-    # Capitalize the first letter of language for the tag, default to Worship if unknown
-    display_lang = song['language'].capitalize() if song['language'] != 'english' else 'Worship'
-    
-    lyrics_cards += f'''
-    <a href="{song["filename"]}" class="song-card interactive-card" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
-        <div class="card-top">
-            <div class="thumbnail-wrapper">
-                <img src="../logo.png" class="album-thumb" alt="Cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 24 24\' fill=\'%233d4554\'><path d=\'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z\'/></svg>'">
-            </div>
-            <div class="card-meta">
-                <h3 class="card-title">{song["author"]}</h3>
-                <p class="card-subtitle">{song["title"]}</p>
-                <div class="tags">
-                    <span class="tag tag-num">{track_num}</span>
-                    <span class="tag tag-genre">{display_lang}</span>
-                    <span class="tag tag-vibe">Uplifting</span>
-                </div>
-            </div>
-            <div class="heart-icon">&#9829;</div>
-        </div>
-        
-        <p class="full-title">{track_num} - {song["author"]} - {song["title"]}</p>
-        <p class="by-line">By: {song["author"]}</p>
-        
-        <div class="btn-play-lyrics">&#9654; Play Lyrics</div>
-        
-        <div class="card-footer">
-            <span class="play-count">&#8857; Plays</span>
-            <span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; 50</span>
-        </div>
-    </a>
-    '''
+    # Added the data-language attribute to the card
+    lyrics_cards += f'<a href="{song["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card" data-language="{song["language"]}"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{song["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;"><strong>By:</strong> {song["author"]}</p></article></a>'
 
-# UI Updated with Glassmorphism Search Bar
-search_content = f'''
-<div class="glass-search-container">
-    <div class="search-input-wrapper">
-        <span class="search-icon">&#128269;</span>
-        <input type="text" id="searchInput" placeholder="Search by Artist, Song Title, or Lyrics...">
-        <span class="clear-icon" id="clearSearch">&#10005;</span>
-    </div>
+# UI Updated with a Flexbox layout for Search + Dropdown Filter
+search_content = f"""
+<div style="margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <input type="text" id="searchInput" placeholder="Search for a song..." style="flex: 1; min-width: 200px; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-family: var(--ui-font); font-size: 1rem;">
     
-    <div class="filter-controls">
-        <div class="filter-group">
-            <label>Language &#127482;&#127480; &#127470;&#127475; &#127988; &#127474;&#127485;</label>
-            <div class="select-wrapper">
-                <span class="globe-icon">&#127757;</span>
-                <select id="langFilter">
-                    <option value="all">All Languages</option>
-                    <option value="english">English</option>
-                    <option value="hindi">Hindi</option>
-                    <option value="malayalam">Malayalam</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="filter-group">
-            <label>Sort by</label>
-            <div class="sort-tabs">
-                <span class="sort-tab">Recent</span>
-                <span class="sort-tab active">Popular</span>
-                <span class="sort-tab">Alphabetical</span>
-            </div>
-        </div>
-    </div>
+    <select id="langFilter" style="padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-family: var(--ui-font); font-size: 1rem; cursor: pointer;">
+        <option value="all">🌍 All Languages</option>
+        <option value="english">English</option>
+        <option value="hindi">Hindi</option>
+        <option value="malayalam">Malayalam</option>
+    </select>
 </div>
-
-<div class="lyrics-grid" id="lyricsGrid">
-    {lyrics_cards}
-</div>
+<div>{lyrics_cards}</div>
 
 <script>
     function filterItems() {{
@@ -240,26 +184,20 @@ search_content = f'''
         let cards = document.getElementsByClassName('interactive-card');
         
         for (let i = 0; i < cards.length; i++) {{
-            let searchableText = cards[i].getAttribute('data-title');
+            let cardText = cards[i].innerText.toLowerCase();
             let cardLang = cards[i].getAttribute('data-language');
             
-            let matchesSearch = searchableText.includes(searchText);
+            let matchesSearch = cardText.includes(searchText);
             let matchesLang = (selectedLang === 'all' || cardLang === selectedLang);
             
-            cards[i].style.display = (matchesSearch && matchesLang) ? "flex" : "none";
+            cards[i].parentElement.style.display = (matchesSearch && matchesLang) ? "" : "none";
         }}
     }}
 
     document.getElementById('searchInput').addEventListener('input', filterItems);
     document.getElementById('langFilter').addEventListener('change', filterItems);
-    
-    document.getElementById('clearSearch').addEventListener('click', function() {{
-        document.getElementById('searchInput').value = '';
-        filterItems();
-    }});
 </script>
-'''
-
+"""
 index_html = master_template.replace('{{TITLE}}', 'Lyrics Archive')\
                             .replace('{{ARTIST}}', 'All Available Songs')\
                             .replace('{{CATEGORY}}', 'Archive')\
@@ -289,13 +227,13 @@ for filename in os.listdir(karaoke_input):
 karaoke_data.sort(key=lambda x: x['title'])
 karaoke_cards = ""
 
-for i, track in enumerate(karaoke_data):
-    iframe_content = f'''
+for track in karaoke_data:
+    iframe_content = f"""
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px; background-color: #000; border: 1px solid var(--border-color);">
         <iframe src="https://www.youtube.com/embed/{track['video_id']}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
     </div>
     <p style="margin-top: 20px; font-size: 1.1rem;">{track['desc']}</p>
-    '''
+    """
     html = master_template.replace('{{TITLE}}', track['title'])\
                           .replace('{{ARTIST}}', 'Karaoke Track')\
                           .replace('{{CATEGORY}}', 'Karaoke')\
@@ -303,37 +241,9 @@ for i, track in enumerate(karaoke_data):
     with open(os.path.join(karaoke_output, track['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
-    track_num = str(i + 1).zfill(2)
-    karaoke_cards += f'''
-    <a href="{track["filename"]}" class="song-card interactive-card" data-language="{track["language"]}" data-title="{track["title"].lower()}">
-        <div class="card-top">
-            <div class="thumbnail-wrapper">
-                <img src="https://img.youtube.com/vi/{track['video_id']}/hqdefault.jpg" class="album-thumb" alt="Thumbnail">
-            </div>
-            <div class="card-meta">
-                <h3 class="card-title">Karaoke</h3>
-                <p class="card-subtitle">{track["title"]}</p>
-                <div class="tags">
-                    <span class="tag tag-num">{track_num}</span>
-                    <span class="tag tag-genre">Instrumental</span>
-                </div>
-            </div>
-            <div class="heart-icon">&#9829;</div>
-        </div>
-        
-        <p class="full-title">{track_num} - {track["title"]}</p>
-        <p class="by-line">Instrumental Track</p>
-        
-        <div class="btn-play-lyrics">&#9654; Play Video</div>
-        
-        <div class="card-footer">
-            <span class="play-count">&#8857; Plays</span>
-            <span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; 50</span>
-        </div>
-    </a>
-    '''
+    karaoke_cards += f'<a href="{track["filename"]}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;"><article style="padding: 1.5rem; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; transition: transform 0.2s;" class="interactive-card" data-language="{track["language"]}"><h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">{track["title"]}</h3><p style="color: var(--muted-text); font-weight: 500;">▶ Play Track</p></article></a>'
 
-k_search_content = search_content.replace('Search by Artist, Song Title, or Lyrics...', 'Search for a karaoke track...').replace(lyrics_cards, karaoke_cards)
+k_search_content = search_content.replace('Search for a song...', 'Search for a karaoke track...').replace(lyrics_cards, karaoke_cards)
 k_index_html = master_template.replace('{{TITLE}}', 'Karaoke Tracks')\
                               .replace('{{ARTIST}}', 'All Available Karaoke')\
                               .replace('{{CATEGORY}}', 'Archive')\
