@@ -110,8 +110,8 @@ For Google Search indexing and browser tabs, the root directory must contain the
 [11] import_meanings.py
     - Purpose: Importer for AI output from `export_pending.py`.
     - What it does: Checks for `completed_meanings.json`. If missing, asks you 
-      to paste the AI's JSON output directly into the terminal, then updates all 
-      the corresponding text files with the new meanings.
+      to paste the AI's JSON output directly into the terminal. Dynamically fetches 
+      Apple Music Track IDs via iTunes API and updates the text files with meanings and player IDs.
     - Command: python import_meanings.py
 
 === D. DIAGNOSTICS & BUILD SYSTEM ===
@@ -122,7 +122,14 @@ For Google Search indexing and browser tabs, the root directory must contain the
       available model names for your region.
     - Command: python check_models.py
 
-[13] generator.py
+[13] retro_apple_fetcher.py
+    - Purpose: Retroactive Apple Music Track ID repair & fetcher.
+    - What it does: Scans all existing files in `raw_lyrics/` to check for missing 
+      `apple_data` blocks. Automatically queries the iTunes API and injects the Apple 
+      Track ID and missing metadata tags without overwriting existing lyrics/meanings.
+    - Command: python retro_apple_fetcher.py
+
+[14] generator.py
     - Purpose: Static HTML Site Builder.
     - What it does: Parses all `.txt` files in `raw_lyrics/` and `raw_karaoke/`. 
       Injects them into `master_template.html`. Generates `index.html` search pages, 
@@ -227,4 +234,14 @@ Goal: Automatically sweep top charts and specific artists for missing songs.
    discoveries directly into the Omni-Fetcher waterfall.
 3. Process & Build:
    $ python bulk_contextualizer.py
+   $ python generator.py
+
+===============================================================================
+SCENARIO H: Backfilling Missing Apple Music Players on Older Songs
+===============================================================================
+Goal: You have legacy song files that were created before Apple Music integration.
+
+1. Run the retro fetcher to update all legacy files:
+   $ python retro_apple_fetcher.py
+2. Rebuild the static HTML site:
    $ python generator.py

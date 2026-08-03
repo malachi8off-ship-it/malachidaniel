@@ -34,7 +34,8 @@ if not pending_songs:
     exit()
 
 # Define the exact prompt instructions for the AI
-ai_prompt = """Please write a 2 to 3 sentence summary about the following Christian worship songs, including their core meaning and biblical context. Keep it objective and informative.
+ai_prompt = """Please write a 2 to 3 sentence summary about the following Christian worship songs, including their core meaning and biblical context. 
+IMPORTANT: If the song is sung in Hindi, Malayalam, Hinglish, or Manglish, you MUST explicitly mention that specific language/style in your summary. Keep it objective and informative.
 
 Return the output STRICTLY in the following JSON array format. Do not include any markdown formatting, code blocks, or conversational text outside of the JSON array:
 

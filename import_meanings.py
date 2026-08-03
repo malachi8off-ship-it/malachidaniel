@@ -1,11 +1,32 @@
 import os
 import json
 import sys
+import time
+import requests
+import urllib.parse
 
 DIR_PATH = "raw_lyrics"
 JSON_FILE = "completed_meanings.json"
 
 meanings_data = None
+
+def search_apple_music(title, artist):
+    """Searches the iTunes API and returns the Track ID."""
+    query = urllib.parse.quote(f"{title} {artist}")
+    url = f"https://itunes.apple.com/search?term={query}&entity=song&limit=1"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        
+        if data.get('resultCount', 0) > 0:
+            track_id = data['results'][0]['trackId']
+            return str(track_id)
+        else:
+            return "NONE" 
+    except Exception as e:
+        print(f"  -> Apple Music Search Error: {e}")
+        return "NONE"
 
 # Check if file exists, otherwise prompt for direct terminal input
 if os.path.exists(JSON_FILE):
@@ -31,7 +52,7 @@ else:
         print(f"\n❌ Invalid JSON received. Error details: {e}")
         exit()
 
-print(f"\n📥 Processing {len(meanings_data)} meanings...")
+print(f"\n📥 Processing {len(meanings_data)} songs...")
 
 for item in meanings_data:
     filename = item.get("filename")
@@ -49,25 +70,45 @@ for item in meanings_data:
     with open(filepath, "r", encoding="utf-8") as f:
         lines = f.readlines()
         
-    # Check if meaning already exists
+    # Check if meaning already exists to prevent double processing
     if len(lines) >= 3 and lines[2].strip().lower() == "meaning":
-        print(f"⏭️ Skipping {filename} - meaning already exists.")
+        print(f"⏭️ Skipping {filename} - already processed.")
         continue
         
-    # Rebuild file with injected meaning
+    title = lines[0].strip()
+    artist = lines[1].strip()
+
+    # 1. Fetch Apple Music Data
+    print(f"🎵 Fetching Apple Music ID for '{title}'...")
+    track_id = search_apple_music(title, artist)
+        
+    # 2. Rebuild file with injected meaning and Apple data
     new_content = [
-        lines[0], # Title
-        lines[1], # Artist
+        f"{title}\n",
+        f"{artist}\n",
         "meaning\n",
-        f"{meaning}\n"
+        f"{meaning}\n",
+        "apple_data\n",
+        f"{track_id}\n",
+        "lyrics\n"
     ]
     
-    # Append the rest of the original content
-    new_content.extend(lines[2:])
+    # 3. Determine where the actual lyrics start in the original file
+    lyrics_start_index = 2
+    for i, line in enumerate(lines):
+        if line.strip().lower() == "lyrics":
+            lyrics_start_index = i + 1 
+            break
+            
+    new_content.extend(lines[lyrics_start_index:])
     
+    # 4. Save the file
     with open(filepath, "w", encoding="utf-8") as f:
         f.writelines(new_content)
         
-    print(f"✅ Updated {filename}")
+    print(f"✅ Updated {filename} (Track ID: {track_id})")
+    
+    # Slight pause to avoid hitting iTunes API rate limits too quickly
+    time.sleep(1)
 
 print("\n🎉 Batch update complete!")
