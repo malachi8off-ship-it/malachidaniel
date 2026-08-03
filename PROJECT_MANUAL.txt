@@ -1,5 +1,5 @@
 ===============================================================================
-                       MALACHI DANIEL - SYSTEM MANUAL
+                        MALACHI DANIEL - SYSTEM MANUAL
 ===============================================================================
 Project: malachidaniel.com
 Purpose: Pipeline automation for lyrics, Christian worship context, metadata,
@@ -77,22 +77,37 @@ For Google Search indexing and browser tabs, the root directory must contain the
       you want to download the missing ones.
     - Command: python discover.py
 
+[7] omni_fetcher.py
+    - Purpose: 3-Layer Waterfall Universal Lyrics Bot.
+    - What it does: Uses a fallback architecture to retrieve hard-to-find lyrics. 
+      (1) Direct LRCLIB search, (2) AI Query Normalization for Hinglish/Manglish 
+      typos + LRCLIB retry, (3) Pure-Python DuckDuckGo (`ddgs`) & BeautifulSoup 
+      web scraper targeting Christian portals. Saves directly to `raw_lyrics/`.
+    - Command: python omni_fetcher.py
+
+[8] auto_discover.py
+    - Purpose: Automated feeder for the Omni-Fetcher pipeline.
+    - What it does: Scans iTunes Top 100 Christian Charts and a customizable list 
+      of featured worship artists. Cross-checks against existing local files and 
+      automatically passes missing songs into the `omni_fetcher` waterfall logic.
+    - Command: python auto_discover.py
+
 === C. AI PIPELINE & PROCESSING ===
 
-[7] bulk_contextualizer.py
+[9] bulk_contextualizer.py
     - Purpose: Full-automation pipeline with API Key Pooling.
     - What it does: Scans `raw_lyrics/` for unprocessed songs. Fetches Apple Music 
       Track IDs via iTunes API. Uses Gemini, Groq, or OpenRouter (randomly rotating) 
       to generate Biblical context and injects it into the file.
     - Command: python bulk_contextualizer.py
 
-[8] export_pending.py
+[10] export_pending.py
     - Purpose: Semi-automated exporter for manual/browser AI processing.
     - What it does: Finds all files missing `meaning` fields. Constructs a batch 
       JSON prompt and uses `clip.exe` to copy it directly to your clipboard.
     - Command: python export_pending.py
 
-[9] import_meanings.py
+[11] import_meanings.py
     - Purpose: Importer for AI output from `export_pending.py`.
     - What it does: Checks for `completed_meanings.json`. If missing, asks you 
       to paste the AI's JSON output directly into the terminal, then updates all 
@@ -101,18 +116,18 @@ For Google Search indexing and browser tabs, the root directory must contain the
 
 === D. DIAGNOSTICS & BUILD SYSTEM ===
 
-[10] check_models.py
+[12] check_models.py
     - Purpose: Basic Gemini API diagnostic.
     - What it does: Checks if your Gemini API key is valid and prints out all 
       available model names for your region.
     - Command: python check_models.py
 
-[11] generator.py
+[13] generator.py
     - Purpose: Static HTML Site Builder.
     - What it does: Parses all `.txt` files in `raw_lyrics/` and `raw_karaoke/`. 
       Injects them into `master_template.html`. Generates `index.html` search pages, 
       Apple Music iframes, YouTube iframes, `sitemap.xml`, and copies CSS/assets 
-      (including all Favicon images) into the `public/` folder.
+      (including all Favicon images) into the `public/` folder. Auto-repairs missing tags.
     - Command: python generator.py
 
 
@@ -187,11 +202,29 @@ Goal: You want to change the icon that appears in Google Search and browser tabs
 4. Rebuild the site so the new assets are pushed to `public/`:
    $ python generator.py
 
+===============================================================================
+SCENARIO F: Fetching Hard-to-Find Regional or Hinglish/Manglish Songs
+===============================================================================
+Goal: You need a Hindi/Malayalam song not on Genius, or have spelling variations.
 
--------------------------------------------------------------------------------
-4. TEMPLATE FOR ADDING NEW ENGINES (Copy & Append Below)
--------------------------------------------------------------------------------
-[#] script_name.py
-    - Purpose: [Brief summary]
-    - What it does: [Detailed step-by-step functionality]
-    - Command: python script_name.py
+1. Launch the Omni-Fetcher:
+   $ python omni_fetcher.py
+2. Enter the title and artist. The bot will automatically correct spelling using 
+   AI, query the LRCLIB database, and safely scrape the web as a fallback.
+3. Process & Build:
+   $ python bulk_contextualizer.py
+   $ python generator.py
+
+===============================================================================
+SCENARIO G: Fully Automated Bulk Discovery & Fetching
+===============================================================================
+Goal: Automatically sweep top charts and specific artists for missing songs.
+
+1. Launch the Auto-Discovery script:
+   $ python auto_discover.py
+2. Select your desired mode (e.g., iTunes charts, specific artist sweep, or full 
+   auto-run). The script will automatically skip existing files and pass new 
+   discoveries directly into the Omni-Fetcher waterfall.
+3. Process & Build:
+   $ python bulk_contextualizer.py
+   $ python generator.py

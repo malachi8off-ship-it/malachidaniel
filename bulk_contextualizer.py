@@ -48,7 +48,7 @@ def generate_with_gemini(prompt):
     if not gemini_client:
         raise ValueError("Gemini API Key missing")
     response = gemini_client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-3.5-flash-lite',
         contents=prompt
     )
     return response.text.strip().replace('\n', ' ')
