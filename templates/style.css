@@ -34,7 +34,7 @@ body.light-mode {
     --card-gradient: linear-gradient(145deg, #ffffff, #f1f5f9);
     
     /* THIS IS THE CHANGE: Linking to your new generated image */
-    --bg-pattern: url('../lighter-bg.jpg');
+    --bg-pattern: url('lighter-bg.jpg');
     
     /* If you used the seamless tile prompt, 350px is great. If you used the full-screen image prompt, change 350px to 100% */
     --pattern-size: 100%; 
