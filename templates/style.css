@@ -7,14 +7,19 @@
     --text-muted: #94a3b8;
     
     --accent-gold: #f59e0b;
-    --accent-glow: rgba(245, 158, 11, 0.2); /* Dark mode glow is gold */
+    
+    /* If your generated image already has the glow, change this to transparent! */
+    --accent-glow: rgba(245, 158, 11, 0.2); 
+    
     --btn-gradient: linear-gradient(135deg, #2563eb, #1e40af);
     --border-subtle: rgba(255, 255, 255, 0.08);
     --card-gradient: linear-gradient(145deg, #1c263b, #121927);
     
-    /* Dark Mode Pattern (Subtle grid) */
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    --pattern-size: 60px;
+    /* New Dark Mode Background */
+    --bg-pattern: url('/dark-bg.jpg');
+    
+    /* Use 'cover' for a full-screen image, or '350px' if you generated a seamless tile */
+    --pattern-size: cover; 
 
     --ui-font: 'Inter', system-ui, -apple-system, sans-serif;
     --lyric-font: 'Georgia', serif;
