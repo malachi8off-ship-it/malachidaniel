@@ -21,23 +21,23 @@
 }
 
 body.light-mode {
-    /* Creamy off-white base to match your mockup */
+    /* Creamy off-white base */
     --bg-base: #f9f7f3;
     --bg-surface: #ffffff;
     --bg-surface-glass: rgba(255, 255, 255, 0.85);
     --text-primary: #1e293b;
     --text-muted: #64748b;
     
-    /* Soft, dusty blue glow at the top */
-    --accent-glow: rgba(132, 169, 200, 0.65); 
+    /* FIX 1: Set to transparent because your image already has the blue glow built-in! */
+    --accent-glow: transparent; 
     --border-subtle: rgba(0, 0, 0, 0.08);
     --card-gradient: linear-gradient(145deg, #ffffff, #f1f5f9);
     
-    /* THIS IS THE CHANGE: Linking to your new generated image */
-    --bg-pattern: url('lighter-bg.jpg');
+    /* FIX 2: Absolute path (notice the forward slash at the start) */
+    --bg-pattern: url('/lighter-bg.jpg');
     
-    /* If you used the seamless tile prompt, 350px is great. If you used the full-screen image prompt, change 350px to 100% */
-    --pattern-size: 100%; 
+    /* FIX 3: Use 'cover' so your custom image stretches perfectly across any screen */
+    --pattern-size: cover; 
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,7 +53,8 @@ body {
         radial-gradient(100% 100% at top center, var(--accent-glow) 0%, transparent 60%), 
         var(--bg-pattern);
     background-size: 100% 100%, var(--pattern-size);
-    background-repeat: no-repeat, repeat;
+    background-repeat: no-repeat, no-repeat; /* Ensure the custom image doesn't tile */
+    background-position: center, top center; /* Anchor the image to the top */
     background-attachment: fixed, fixed;
     transition: background-color 0.3s ease, color 0.3s ease, background-image 0.5s ease;
 }
