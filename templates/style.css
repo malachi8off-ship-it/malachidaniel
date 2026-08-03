@@ -34,7 +34,7 @@ body.light-mode {
     --card-gradient: linear-gradient(145deg, #ffffff, #f1f5f9);
     
     /* FIX 2: Absolute path (notice the forward slash at the start) */
-    --bg-pattern: url('/lighter-bg.jpg');
+    --bg-pattern: url('https://malachidaniel.com/lighter-bg.jpg');
     
     /* FIX 3: Use 'cover' so your custom image stretches perfectly across any screen */
     --pattern-size: cover; 
