@@ -2,6 +2,8 @@ import os
 import datetime
 import shutil
 import re
+import urllib.request
+import json
 
 # --- BULLETPROOF PATHS ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,11 +17,39 @@ css_input = os.path.join(BASE_DIR, 'templates', 'style.css')
 css_output = os.path.join(BASE_DIR, 'public', 'style.css')
 request_input = os.path.join(BASE_DIR, 'templates', 'request.html')
 request_output = os.path.join(BASE_DIR, 'public', 'request.html')
+artwork_cache_file = os.path.join(BASE_DIR, 'artwork_cache.json')
 
 # Ensure all folders exist
 for directory in [lyrics_output, karaoke_output, lyrics_input, karaoke_input]:
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+# Load existing artwork cache
+if os.path.exists(artwork_cache_file):
+    with open(artwork_cache_file, 'r', encoding='utf-8') as f:
+        artwork_cache = json.load(f)
+else:
+    artwork_cache = {}
+
+def get_itunes_artwork(apple_id):
+    if not apple_id or apple_id.upper() == "NONE":
+        return "../logo.png"
+    if apple_id in artwork_cache:
+        return artwork_cache[apple_id]
+    
+    try:
+        url = f"https://itunes.apple.com/lookup?id={apple_id}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            if data['resultCount'] > 0:
+                # Fetch a high-quality 600x600 image instead of the tiny default
+                art_url = data['results'][0]['artworkUrl100'].replace('100x100bb', '600x600bb')
+                artwork_cache[apple_id] = art_url
+                return art_url
+    except Exception as e:
+        print(f"Artwork fetch failed for ID {apple_id}: {e}")
+    return "../logo.png"
 
 # ==========================================
 # 0. LOAD CUSTOM UI & COPY STATIC FILES
@@ -133,6 +163,7 @@ lyrics_cards = ""
 
 for i, song in enumerate(songs_data):
     full_song_content = ""
+    art_url = get_itunes_artwork(song['apple_id'])
     
     if song['apple_id']:
         full_song_content += f'''
@@ -164,12 +195,13 @@ for i, song in enumerate(songs_data):
     track_num = str(i + 1).zfill(2)
     # Capitalize the first letter of language for the tag, default to Worship if unknown
     display_lang = song['language'].capitalize() if song['language'] != 'english' else 'Worship'
+    song_identifier = song['apple_id'] if song['apple_id'] else song['title']
     
     lyrics_cards += f'''
-    <a href="{song["filename"]}" class="song-card interactive-card" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
+    <a href="{song["filename"]}" class="song-card interactive-card" data-index="{i}" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
         <div class="card-top">
             <div class="thumbnail-wrapper">
-                <img src="../logo.png" class="album-thumb" alt="Cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 24 24\' fill=\'%233d4554\'><path d=\'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z\'/></svg>'">
+                <img src="{art_url}" class="album-thumb" alt="Cover" onerror="this.src='../logo.png'">
             </div>
             <div class="card-meta">
                 <h3 class="card-title">{song["author"]}</h3>
@@ -180,7 +212,7 @@ for i, song in enumerate(songs_data):
                     <span class="tag tag-vibe">Uplifting</span>
                 </div>
             </div>
-            <div class="heart-icon">&#9829;</div>
+            <div class="heart-icon" data-id="{song_identifier}">&#9825;</div>
         </div>
         
         <p class="full-title">{track_num} - {song["author"]} - {song["title"]}</p>
@@ -195,7 +227,7 @@ for i, song in enumerate(songs_data):
     </a>
     '''
 
-# UI Updated with Glassmorphism Search Bar
+# UI Updated with Glassmorphism Search Bar and JS sorting logic
 search_content = f'''
 <div class="glass-search-container">
     <div class="search-input-wrapper">
@@ -221,9 +253,9 @@ search_content = f'''
         <div class="filter-group">
             <label>Sort by</label>
             <div class="sort-tabs">
-                <span class="sort-tab">Recent</span>
-                <span class="sort-tab active">Popular</span>
-                <span class="sort-tab">Alphabetical</span>
+                <span class="sort-tab" data-sort="favorites">Favorites</span>
+                <span class="sort-tab active" data-sort="popular">Popular</span>
+                <span class="sort-tab" data-sort="alphabetical">Alphabetical</span>
             </div>
         </div>
     </div>
@@ -234,26 +266,81 @@ search_content = f'''
 </div>
 
 <script>
+    // Favorites System
+    let favorites = JSON.parse(localStorage.getItem('lyric_favorites')) || [];
+
+    document.querySelectorAll('.heart-icon').forEach(icon => {{
+        let songId = icon.getAttribute('data-id');
+        if (favorites.includes(songId)) {{
+            icon.classList.add('active');
+            icon.innerHTML = '&#9829;'; // Filled heart
+        }}
+        
+        icon.addEventListener('click', function(e) {{
+            e.preventDefault(); // Stop link navigation
+            e.stopPropagation();
+            
+            let index = favorites.indexOf(songId);
+            if (index === -1) {{
+                favorites.push(songId);
+                this.classList.add('active');
+                this.innerHTML = '&#9829;';
+            }} else {{
+                favorites.splice(index, 1);
+                this.classList.remove('active');
+                this.innerHTML = '&#9825;'; // Empty heart
+            }}
+            localStorage.setItem('lyric_favorites', JSON.stringify(favorites));
+            
+            if (currentSort === 'favorites') filterItems();
+        }});
+    }});
+
+    // Filtering & Sorting System
+    let currentSort = 'popular';
+    
+    document.querySelectorAll('.sort-tab').forEach(tab => {{
+        tab.addEventListener('click', function() {{
+            document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentSort = this.getAttribute('data-sort');
+            filterItems();
+        }});
+    }});
+
     function filterItems() {{
         let searchText = document.getElementById('searchInput').value.toLowerCase();
         let selectedLang = document.getElementById('langFilter').value;
-        let cards = document.getElementsByClassName('interactive-card');
+        let cards = Array.from(document.getElementsByClassName('interactive-card'));
+        let grid = document.getElementById('lyricsGrid');
         
-        for (let i = 0; i < cards.length; i++) {{
-            let searchableText = cards[i].getAttribute('data-title');
-            let cardLang = cards[i].getAttribute('data-language');
+        cards.forEach(card => {{
+            let searchableText = card.getAttribute('data-title');
+            let cardLang = card.getAttribute('data-language');
+            let songId = card.querySelector('.heart-icon').getAttribute('data-id');
             
             let matchesSearch = searchableText.includes(searchText);
             let matchesLang = (selectedLang === 'all' || cardLang === selectedLang);
+            let matchesFav = (currentSort !== 'favorites' || favorites.includes(songId));
             
-            cards[i].style.display = (matchesSearch && matchesLang) ? "flex" : "none";
+            card.style.display = (matchesSearch && matchesLang && matchesFav) ? "flex" : "none";
+        }});
+        
+        let visibleCards = cards.filter(c => c.style.display !== "none");
+        
+        if (currentSort === 'alphabetical') {{
+            visibleCards.sort((a, b) => a.getAttribute('data-title').localeCompare(b.getAttribute('data-title')));
+        }} else {{
+            visibleCards.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
         }}
+        
+        // Reattach in sorted order
+        visibleCards.forEach(card => grid.appendChild(card));
     }}
 
     document.getElementById('searchInput').addEventListener('input', filterItems);
     document.getElementById('langFilter').addEventListener('change', filterItems);
-    
-    document.getElementById('clearSearch').addEventListener('click', function() {{
+    document.getElementById('clearSearch').addEventListener('click', () => {{
         document.getElementById('searchInput').value = '';
         filterItems();
     }});
@@ -267,6 +354,9 @@ index_html = master_template.replace('{{TITLE}}', 'Lyrics Archive')\
 with open(os.path.join(lyrics_output, 'index.html'), 'w', encoding='utf-8') as f: 
     f.write(index_html)
 
+# Save the fetched artwork links to cache
+with open(artwork_cache_file, 'w', encoding='utf-8') as f:
+    json.dump(artwork_cache, f)
 
 # ==========================================
 # 2. KARAOKE YOUTUBE GENERATOR LOGIC
@@ -318,7 +408,8 @@ for i, track in enumerate(karaoke_data):
                     <span class="tag tag-genre">Instrumental</span>
                 </div>
             </div>
-            <div class="heart-icon">&#9829;</div>
+            <!-- Disabled favoriting for karaoke to keep it simple -->
+            <div class="heart-icon" style="display:none;"></div>
         </div>
         
         <p class="full-title">{track_num} - {track["title"]}</p>
