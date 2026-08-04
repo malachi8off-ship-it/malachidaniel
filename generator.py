@@ -264,7 +264,7 @@ search_content = f'''
 </div>
 
 <div class="lyrics-grid" id="lyricsGrid">
-    {lyrics_cards}
+    {{lyrics_cards}}
 </div>
 
 <script>
@@ -316,28 +316,37 @@ search_content = f'''
         let cards = Array.from(document.getElementsByClassName('interactive-card'));
         let grid = document.getElementById('lyricsGrid');
         
+        // 1. Filter visibility
         cards.forEach(card => {{
             let searchableText = card.getAttribute('data-title');
             let cardLang = card.getAttribute('data-language');
-            let songId = card.querySelector('.heart-icon').getAttribute('data-id');
+            
+            // Handle favoriting logic safely (Karaoke doesn't have hearts)
+            let heartIcon = card.querySelector('.heart-icon');
+            let songId = heartIcon ? heartIcon.getAttribute('data-id') : null;
             
             let matchesSearch = searchableText.includes(searchText);
             let matchesLang = (selectedLang === 'all' || cardLang === selectedLang);
-            let matchesFav = (currentSort !== 'favorites' || favorites.includes(songId));
+            let matchesFav = (currentSort !== 'favorites' || (songId && favorites.includes(songId)));
             
             card.style.display = (matchesSearch && matchesLang && matchesFav) ? "flex" : "none";
         }});
         
-        let visibleCards = cards.filter(c => c.style.display !== "none");
-        
+        // 2. Sort ALL cards to maintain DOM integrity
         if (currentSort === 'alphabetical') {{
-            visibleCards.sort((a, b) => a.getAttribute('data-title').localeCompare(b.getAttribute('data-title')));
+            cards.sort((a, b) => {{
+                // Strip leading numbers and symbols to sort by actual letters
+                let textA = a.getAttribute('data-title').replace(/^[\\d\\s-]+/, ''); 
+                let textB = b.getAttribute('data-title').replace(/^[\\d\\s-]+/, ''); 
+                return textA.localeCompare(textB);
+            }});
         }} else {{
-            visibleCards.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
+            // Popular (or Favorites) uses the original numerical index
+            cards.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
         }}
         
-        // Reattach in sorted order
-        visibleCards.forEach(card => grid.appendChild(card));
+        // 3. Reattach in sorted order
+        cards.forEach(card => grid.appendChild(card));
     }}
 
     document.getElementById('searchInput').addEventListener('input', filterItems);
@@ -403,7 +412,7 @@ for i, track in enumerate(karaoke_data):
         
     track_num = str(i + 1).zfill(2)
     karaoke_cards += f'''
-    <a href="{track["filename"]}" class="song-card interactive-card" data-language="{track["language"]}" data-title="{track["title"].lower()}">
+    <a href="{track["filename"]}" class="song-card interactive-card" data-index="{i}" data-language="{track["language"]}" data-title="{track["title"].lower()}">
         <div class="card-top">
             <div class="thumbnail-wrapper">
                 <img src="https://img.youtube.com/vi/{track['video_id']}/hqdefault.jpg" class="album-thumb" alt="Thumbnail">
