@@ -7,18 +7,24 @@
     --text-muted: #94a3b8;
     
     --accent-gold: #f59e0b;
-    
-    /* If your generated image already has the glow, change this to transparent! */
-    --accent-glow: rgba(245, 158, 11, 0.2); 
+    --accent-glow: transparent; 
     
     --btn-gradient: linear-gradient(135deg, #2563eb, #1e40af);
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --card-gradient: linear-gradient(145deg, #1c263b, #121927);
+    
+    /* WARM TINT ADDED HERE: Amber borders and brownish/navy gradient */
+    --border-subtle: rgba(245, 158, 11, 0.15); 
+    --card-gradient: linear-gradient(145deg, rgba(45, 30, 20, 0.8), rgba(15, 20, 30, 0.9));
+    
+    /* Lifted Typography Variables for Dark Mode */
+    --header-title: #fdf6e3;
+    --header-shadow: 0 6px 16px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9);
+    --header-subtitle: #d4a373;
+    --badge-bg: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(0, 0, 0, 0.5));
+    --badge-border: rgba(245, 158, 11, 0.3);
+    --badge-text: #fdf6e3;
     
     /* New Dark Mode Background */
     --bg-pattern: url('/dark-bg.jpg');
-    
-    /* Use 'cover' for a full-screen image, or '350px' if you generated a seamless tile */
     --pattern-size: cover; 
 
     --ui-font: 'Inter', system-ui, -apple-system, sans-serif;
@@ -33,15 +39,19 @@ body.light-mode {
     --text-primary: #1e293b;
     --text-muted: #64748b;
     
-    /* FIX 1: Set to transparent because your image already has the blue glow built-in! */
     --accent-glow: transparent; 
     --border-subtle: rgba(0, 0, 0, 0.08);
     --card-gradient: linear-gradient(145deg, #ffffff, #f1f5f9);
     
-    /* FIX 2: Absolute path (notice the forward slash at the start) */
-    --bg-pattern: url('/lighter-bg.jpg');
+    /* Lifted Typography Variables for Light Mode */
+    --header-title: #1e293b;
+    --header-shadow: 0 4px 15px rgba(255, 255, 255, 0.8);
+    --header-subtitle: #475569;
+    --badge-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 0.9));
+    --badge-border: rgba(0, 0, 0, 0.1);
+    --badge-text: #475569;
     
-    /* FIX 3: Use 'cover' so your custom image stretches perfectly across any screen */
+    --bg-pattern: url('/lighter-bg.jpg');
     --pattern-size: cover; 
 }
 
@@ -58,8 +68,8 @@ body {
         radial-gradient(100% 100% at top center, var(--accent-glow) 0%, transparent 60%), 
         var(--bg-pattern);
     background-size: 100% 100%, var(--pattern-size);
-    background-repeat: no-repeat, no-repeat; /* Ensure the custom image doesn't tile */
-    background-position: center, top center; /* Anchor the image to the top */
+    background-repeat: no-repeat, no-repeat; 
+    background-position: center, top center; 
     background-attachment: fixed, fixed;
     transition: background-color 0.3s ease, color 0.3s ease, background-image 0.5s ease;
 }
@@ -88,7 +98,7 @@ body {
 
 .btn-primary { background: var(--btn-gradient); color: #ffffff; text-decoration: none; padding: 0.6rem 1.5rem; border-radius: 999px; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); cursor: pointer; transition: all 0.2s; }
 
-/* Sun & Moon Theme Toggle - Modern Pill Switch */
+/* Sun & Moon Theme Toggle */
 .header-emblem {
     position: absolute; 
     left: 50%; 
@@ -105,64 +115,75 @@ body {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.header-emblem:hover {
-    border-color: var(--accent-gold);
-}
+.header-emblem:hover { border-color: var(--accent-gold); }
 
 .sun-icon {
-    width: 24px;
-    height: 24px;
+    width: 24px; height: 24px;
     background: var(--accent-gold);
     border-radius: 50%;
     margin-left: 4px;
     transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
 }
 
-/* Dark mode icon inside the switch */
-.sun-icon::after {
-    content: '☀'; 
-    font-size: 14px; 
-    color: #fff; 
-    text-shadow: none;
-    line-height: 1;
-}
+.sun-icon::after { content: '☀'; font-size: 14px; color: #fff; line-height: 1; }
 
-/* Light Mode State */
 .header-emblem.moon-mode {
     background: rgba(100, 100, 100, 0.1);
     border-color: #cbd5e1;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Slide the circle to the right */
 .header-emblem.moon-mode .sun-icon {
     transform: translateX(30px);
     background: #1e293b;
     box-shadow: 0 2px 5px rgba(30, 41, 59, 0.4);
 }
 
-/* Change icon to moon */
-.header-emblem.moon-mode .sun-icon::after {
-    content: '☾'; 
-    font-size: 14px; 
-    color: #fff;
-    transform: translateY(-1px);
+.header-emblem.moon-mode .sun-icon::after { content: '☾'; font-size: 14px; color: #fff; transform: translateY(-1px); }
+
+/* CONTAINERS & LIFTED TYPOGRAPHY */
+.container { max-width: 1200px; margin: 3rem auto; padding: 0 1.25rem; }
+.song-header { text-align: center; margin-bottom: 3.5rem; }
+
+.song-title { 
+    font-size: 2.8rem; 
+    margin-bottom: 0.5rem; 
+    color: var(--header-title);
+    text-shadow: var(--header-shadow);
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
-/* CONTAINERS */
-.container { max-width: 1200px; margin: 3rem auto; padding: 0 1.25rem; }
-.song-header { text-align: center; margin-bottom: 2.5rem; }
-.song-title { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-primary); }
-.song-artist { font-size: 1.15rem; color: var(--text-muted); }
-.category-badge { display: inline-block; margin-top: 1rem; background-color: var(--border-subtle); color: var(--text-muted); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.song-artist { 
+    font-size: 1.2rem; 
+    color: var(--header-subtitle); 
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    font-weight: 500;
+}
+
+.category-badge { 
+    display: inline-block; 
+    margin-top: 1.2rem; 
+    background: var(--badge-bg); 
+    color: var(--badge-text); 
+    padding: 0.5rem 1.5rem; 
+    border-radius: 999px; 
+    font-size: 0.8rem; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid var(--badge-border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
 .btn-back { display: inline-block; color: var(--text-muted); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-subtle); font-weight: 500; font-size: 0.9rem; }
 
 /* SEARCH BAR */
-.glass-search-container { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: background 0.3s, border-color 0.3s; }
+.glass-search-container { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: background 0.3s, border-color 0.3s; }
 .search-input-wrapper { flex: 1; min-width: 250px; display: flex; align-items: center; background: rgba(100,100,100,0.1); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 0.75rem 1.25rem; }
 .search-input-wrapper input { background: transparent; border: none; color: var(--text-primary); width: 100%; margin: 0 10px; font-size: 1rem; }
 .search-input-wrapper input:focus { outline: none; }
@@ -179,18 +200,30 @@ body {
 .sort-tab { padding: 0.4rem 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
 .sort-tab.active { background: var(--border-subtle); color: var(--text-primary); font-weight: 600; }
 
-/* 3-COLUMN GRID & RICH CARDS */
-.lyrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-.song-card { background: var(--card-gradient); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; text-decoration: none; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-.song-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); border-color: var(--accent-gold); }
+/* 3-COLUMN GRID FIX & RICH CARDS */
+.lyrics-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 1.5rem; 
+}
+
+/* Force 3 Columns on larger screens */
+@media (min-width: 1024px) {
+    .lyrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.song-card { background: var(--card-gradient); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; text-decoration: none; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.song-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.4); border-color: var(--accent-gold); }
 
 .card-top { display: flex; gap: 1rem; margin-bottom: 1.5rem; position: relative; }
-.thumbnail-wrapper img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.thumbnail-wrapper img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
 .card-meta { flex: 1; }
 .card-title { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.2rem; }
 .card-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
 .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.tag { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(100,100,100,0.1); color: var(--text-muted); }
+.tag { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(100,100,100,0.2); color: var(--text-muted); }
 
 /* Favorite Heart System */
 .heart-icon { position: absolute; top: 0; right: 0; color: #94a3b8; font-size: 1.5rem; transition: color 0.2s, transform 0.2s; z-index: 10; cursor: pointer; }
