@@ -195,12 +195,18 @@ for i, song in enumerate(songs_data):
         
     # NEW UI: Generate the rich media card structure
     track_num = str(i + 1).zfill(2)
-    # Capitalize the first letter of language for the tag, default to Worship if unknown
     display_lang = song['language'].capitalize() if song['language'] != 'english' else 'Worship'
     song_identifier = song['apple_id'] if song['apple_id'] else song['title']
     
+    # 1. File creation time for Recently Added
+    full_txt_path = os.path.join(lyrics_input, song['filename'].replace('.html', '.txt'))
+    creation_time = os.path.getctime(full_txt_path) if os.path.exists(full_txt_path) else 0
+    
+    # 2. Strip numbers for Alphabetical sort
+    clean_title = re.sub(r'^[\d\s\-]+', '', song["title"]).lower()
+    
     lyrics_cards += f'''
-    <a href="{song["filename"]}" class="song-card interactive-card" data-index="{i}" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
+    <a href="{song["filename"]}" class="song-card interactive-card" data-index="{i}" data-time="{creation_time}" data-sort-name="{clean_title}" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
         <div class="card-top">
             <div class="thumbnail-wrapper">
                 <img src="{art_url}" class="album-thumb" alt="Cover" onerror="this.src='../logo.png'">
@@ -256,8 +262,8 @@ search_content = f'''
             <label>Sort by</label>
             <div class="sort-tabs">
                 <span class="sort-tab" data-sort="favorites">Favorites</span>
-                <span class="sort-tab active" data-sort="popular">Popular</span>
-                <span class="sort-tab" data-sort="alphabetical">Alphabetical</span>
+                <span class="sort-tab active" data-sort="alphabetical">Alphabetical</span>
+                <span class="sort-tab" data-sort="recent">Recently Added</span>
             </div>
         </div>
     </div>
@@ -299,7 +305,7 @@ search_content = f'''
     }});
 
     // Filtering & Sorting System
-    let currentSort = 'popular';
+    let currentSort = 'alphabetical';
     
     document.querySelectorAll('.sort-tab').forEach(tab => {{
         tab.addEventListener('click', function() {{
@@ -334,20 +340,22 @@ search_content = f'''
         
         // 2. Sort ALL cards to maintain DOM integrity
         if (currentSort === 'alphabetical') {{
-            cards.sort((a, b) => {{
-                // Strip leading numbers and symbols to sort by actual letters
-                let textA = a.getAttribute('data-title').replace(/^[\\d\\s-]+/, ''); 
-                let textB = b.getAttribute('data-title').replace(/^[\\d\\s-]+/, ''); 
-                return textA.localeCompare(textB);
-            }});
+            // Python pre-cleaned the title to data-sort-name
+            cards.sort((a, b) => a.getAttribute('data-sort-name').localeCompare(b.getAttribute('data-sort-name')));
+        }} else if (currentSort === 'recent') {{
+            // Sort by hidden creation timestamp
+            cards.sort((a, b) => parseFloat(b.getAttribute('data-time')) - parseFloat(a.getAttribute('data-time')));
         }} else {{
-            // Popular (or Favorites) uses the original numerical index
+            // Fallback for Favorites
             cards.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
         }}
         
         // 3. Reattach in sorted order
         cards.forEach(card => grid.appendChild(card));
     }}
+    
+    // Fire initial sort on load
+    filterItems();
 
     document.getElementById('searchInput').addEventListener('input', filterItems);
     document.getElementById('langFilter').addEventListener('change', filterItems);
@@ -411,8 +419,16 @@ for i, track in enumerate(karaoke_data):
         f.write(html)
         
     track_num = str(i + 1).zfill(2)
+    
+    # 1. File creation time for Recently Added
+    full_txt_path = os.path.join(karaoke_input, track['filename'].replace('.html', '.txt'))
+    creation_time = os.path.getctime(full_txt_path) if os.path.exists(full_txt_path) else 0
+    
+    # 2. Strip numbers for Alphabetical sort
+    clean_title = re.sub(r'^[\d\s\-]+', '', track["title"]).lower()
+    
     karaoke_cards += f'''
-    <a href="{track["filename"]}" class="song-card interactive-card" data-index="{i}" data-language="{track["language"]}" data-title="{track["title"].lower()}">
+    <a href="{track["filename"]}" class="song-card interactive-card" data-index="{i}" data-time="{creation_time}" data-sort-name="{clean_title}" data-language="{track["language"]}" data-title="{track["title"].lower()}">
         <div class="card-top">
             <div class="thumbnail-wrapper">
                 <img src="https://img.youtube.com/vi/{track['video_id']}/hqdefault.jpg" class="album-thumb" alt="Thumbnail">
