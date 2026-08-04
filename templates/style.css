@@ -246,9 +246,40 @@ body {
 .rating { color: var(--accent-gold); letter-spacing: 2px; }
 
 /* SONG PAGE SPECIFICS */
-.lyrics-body { max-width: 800px; margin: 0 auto; background: var(--bg-surface-glass); backdrop-filter: blur(12px); border-radius: 12px; padding: 2.5rem; border: 1px solid var(--border-subtle); transition: background 0.3s, border-color 0.3s; }
-.lyric-text { font-family: var(--lyric-font); font-size: 1.25rem; line-height: 2; text-align: center; margin-bottom: 3rem; white-space: pre-wrap; color: var(--text-primary); }
-.meaning-card { background: rgba(100,100,100,0.05); border: 1px solid var(--border-subtle); border-left: 4px solid var(--accent-gold); padding: 1.5rem; border-radius: 10px; }
+.lyrics-body { 
+    max-width: 1350px; /* Widened from 800px to let the 3 columns breathe */
+    width: 100%;
+    margin: 0 auto; 
+    background: var(--bg-surface-glass); 
+    backdrop-filter: blur(12px); 
+    border-radius: 12px; 
+    padding: 2.5rem; 
+    border: 1px solid var(--border-subtle); 
+    transition: background 0.3s, border-color 0.3s; 
+}
+
+.lyric-text { 
+    max-width: 800px; /* Keeps the actual lyrics text centered and easy to read */
+    margin: 0 auto;
+    font-family: var(--lyric-font); 
+    font-size: 1.25rem; 
+    line-height: 2; 
+    text-align: center; 
+    margin-bottom: 3rem; 
+    white-space: pre-wrap; 
+    color: var(--text-primary); 
+}
+
+.meaning-card { 
+    max-width: 800px; /* Keeps the meaning card aligned with the lyrics */
+    margin: 0 auto;
+    background: rgba(100,100,100,0.05); 
+    border: 1px solid var(--border-subtle); 
+    border-left: 4px solid var(--accent-gold); 
+    padding: 1.5rem; 
+    border-radius: 10px; 
+}
+
 .meaning-card h3 { margin: 0 0 0.75rem 0; color: var(--accent-gold); font-size: 1.1rem; }
 .meaning-card p { margin: 0; line-height: 1.7; color: var(--text-muted); font-size: 0.95rem; }
 
