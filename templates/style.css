@@ -186,7 +186,37 @@ body {
     -webkit-backdrop-filter: blur(8px);
 }
 
-.btn-back { display: inline-block; color: var(--text-muted); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-subtle); font-weight: 500; font-size: 0.9rem; }
+/* ==========================================
+   BACK TO MAIN BUTTON (Glassmorphism)
+   ========================================== */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.25rem;
+    color: #e2e8f0; /* Soft white text */
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    
+    /* Glassmorphism Effect */
+    background: rgba(255, 255, 255, 0.05); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px; /* Creates the Pill shape */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    /* Smooth animations */
+    transition: all 0.3s ease;
+}
+
+/* Hover State - Amber Glow & Nudge */
+.btn-back:hover {
+    background: rgba(255, 191, 0, 0.15); /* Subtle amber tint */
+    border-color: rgba(255, 191, 0, 0.4);
+    color: #ffbf00; /* Amber text to match your theme */
+    box-shadow: 0 4px 15px rgba(255, 191, 0, 0.15);
+    transform: translateX(-5px); /* Nudges the whole button left on hover */
+}
 
 /* SEARCH BAR */
 .glass-search-container { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: background 0.3s, border-color 0.3s; }
@@ -247,7 +277,7 @@ body {
 
 /* SONG PAGE SPECIFICS */
 .lyrics-body { 
-    max-width: 1350px; /* Widened from 800px to let the 3 columns breathe */
+    max-width: 1350px; 
     width: 100%;
     margin: 0 auto; 
     background: var(--bg-surface-glass); 
@@ -259,7 +289,7 @@ body {
 }
 
 .lyric-text { 
-    max-width: 800px; /* Keeps the actual lyrics text centered and easy to read */
+    max-width: 800px; 
     margin: 0 auto;
     font-family: var(--lyric-font); 
     font-size: 1.25rem; 
@@ -271,7 +301,7 @@ body {
 }
 
 .meaning-card { 
-    max-width: 800px; /* Keeps the meaning card aligned with the lyrics */
+    max-width: 800px; 
     margin: 0 auto;
     background: rgba(100,100,100,0.05); 
     border: 1px solid var(--border-subtle); 
@@ -285,6 +315,7 @@ body {
 
 /* FOOTER & RESPONSIVE */
 .footer { text-align: center; padding: 2rem; margin-top: 3rem; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle); }
+
 /* ==========================================
    MOBILE RESPONSIVENESS (Max Width: 768px)
    ========================================== */
@@ -378,5 +409,19 @@ body {
         left: 0;
         transform: none;
         margin: 0.5rem auto;
+    }
+    
+    /* 6. Back Button Mobile Adjustments */
+    .btn-back {
+        display: flex;
+        justify-content: center;
+        width: fit-content;
+        margin: 0 auto;
+    }
+    
+    
+    /* Overrides the inline left-align for mobile */
+    .container > div[style*="text-align: left;"] {
+        text-align: center !important; 
     }
 }
