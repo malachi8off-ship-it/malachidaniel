@@ -144,7 +144,13 @@ body {
 .header-emblem.moon-mode .sun-icon::after { content: '☾'; font-size: 14px; color: #fff; transform: translateY(-1px); }
 
 /* CONTAINERS & LIFTED TYPOGRAPHY */
-.container { max-width: 1200px; margin: 3rem auto; padding: 0 1.25rem; }
+.container { 
+    max-width: 1350px; 
+    width: 95%; 
+    margin: 3rem auto; 
+    padding: 0 1.5rem; 
+}
+
 .song-header { text-align: center; margin-bottom: 3.5rem; }
 
 .song-title { 
@@ -203,14 +209,15 @@ body {
 /* 3-COLUMN GRID FIX & RICH CARDS */
 .lyrics-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 1.5rem; 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 2rem; 
+    width: 100%;
 }
 
-/* Force 3 Columns on larger screens */
-@media (min-width: 1024px) {
+/* Force 3 Columns on larger screens and prevent overflow */
+@media (min-width: 1100px) {
     .lyrics-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
