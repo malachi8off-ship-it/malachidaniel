@@ -186,7 +186,9 @@ for i, song in enumerate(songs_data):
     html = master_template.replace('{{TITLE}}', song['title'])\
                            .replace('{{ARTIST}}', song['author'])\
                            .replace('{{CATEGORY}}', 'Lyrics')\
-                           .replace('{{LYRICS_CONTENT}}', full_song_content)
+                           .replace('{{LYRICS_CONTENT}}', full_song_content)\
+                           .replace('{{BACK_URL}}', 'index.html')\
+                           .replace('{{BACK_TEXT}}', 'Back to Lyrics Hub')
                            
     with open(os.path.join(lyrics_output, song['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
@@ -350,7 +352,10 @@ search_content = f'''
 index_html = master_template.replace('{{TITLE}}', 'Lyrics Archive')\
                             .replace('{{ARTIST}}', 'All Available Songs')\
                             .replace('{{CATEGORY}}', 'Archive')\
-                            .replace('{{LYRICS_CONTENT}}', search_content)
+                            .replace('{{LYRICS_CONTENT}}', search_content)\
+                            .replace('{{BACK_URL}}', '../index.html')\
+                            .replace('{{BACK_TEXT}}', 'Back to Main Hub')
+                            
 with open(os.path.join(lyrics_output, 'index.html'), 'w', encoding='utf-8') as f: 
     f.write(index_html)
 
@@ -389,7 +394,10 @@ for i, track in enumerate(karaoke_data):
     html = master_template.replace('{{TITLE}}', track['title'])\
                           .replace('{{ARTIST}}', 'Karaoke Track')\
                           .replace('{{CATEGORY}}', 'Karaoke')\
-                          .replace('{{LYRICS_CONTENT}}', iframe_content)
+                          .replace('{{LYRICS_CONTENT}}', iframe_content)\
+                          .replace('{{BACK_URL}}', 'index.html')\
+                          .replace('{{BACK_TEXT}}', 'Back to Karaoke Hub')
+                          
     with open(os.path.join(karaoke_output, track['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
@@ -428,7 +436,10 @@ k_search_content = search_content.replace('Search by Artist, Song Title, or Lyri
 k_index_html = master_template.replace('{{TITLE}}', 'Karaoke Tracks')\
                               .replace('{{ARTIST}}', 'All Available Karaoke')\
                               .replace('{{CATEGORY}}', 'Archive')\
-                              .replace('{{LYRICS_CONTENT}}', k_search_content)
+                              .replace('{{LYRICS_CONTENT}}', k_search_content)\
+                              .replace('{{BACK_URL}}', '../index.html')\
+                              .replace('{{BACK_TEXT}}', 'Back to Main Hub')
+                              
 with open(os.path.join(karaoke_output, 'index.html'), 'w', encoding='utf-8') as f: 
     f.write(k_index_html)
 
