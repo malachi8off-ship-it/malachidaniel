@@ -270,7 +270,7 @@ search_content = f'''
 </div>
 
 <div class="lyrics-grid" id="lyricsGrid">
-    {{lyrics_cards}}
+    {lyrics_cards}
 </div>
 
 <script>
