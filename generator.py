@@ -460,27 +460,27 @@ with open(template_path, 'r', encoding='utf-8') as f:
 # Build the beautiful Glassmorphic Main Hub Grid
 home_content = '''
 <div class="glass-search-container" style="text-align: center; padding: 40px 20px;">
-    <h2 style="color: #fff; margin-bottom: 30px; font-size: 1.8rem;">Explore the Channel</h2>
+    <h2 style="margin-bottom: 30px; font-size: 1.8rem;">Explore the Channel</h2>
     
     <div class="lyrics-grid">
         <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">📖 Lyrics Archive</h3>
-            <p style="color: #aebacd; font-size: 1rem;">Search rare hymns and official songs.</p>
+            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">📖 Lyrics Archive</h3>
+            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Search rare hymns and official songs.</p>
         </a>
         
         <a href="karaoke-tracks/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">🎤 Karaoke Tracks</h3>
-            <p style="color: #aebacd; font-size: 1rem;">High-quality instrumentals for worship.</p>
+            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">🎤 Karaoke Tracks</h3>
+            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">High-quality instrumentals for worship.</p>
         </a>
         
         <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">✨ Testimonies</h3>
-            <p style="color: #aebacd; font-size: 1rem;">Powerful stories and biblical reflections.</p>
+            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">✨ Testimonies</h3>
+            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Powerful stories and biblical reflections.</p>
         </a>
         
         <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">🎧 Remixes & Mashups</h3>
-            <p style="color: #aebacd; font-size: 1rem;">Listen to the latest channel releases.</p>
+            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">🎧 Remixes & Mashups</h3>
+            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Listen to the latest channel releases.</p>
         </a>
     </div>
 </div>
@@ -499,8 +499,8 @@ with open(os.path.join(BASE_DIR, 'public', 'index.html'), 'w', encoding='utf-8')
 # Build the Glassmorphic Coming Soon Page
 coming_soon_content = '''
 <div class="glass-search-container" style="text-align: center; padding: 60px 20px; margin-top: 20px;">
-    <h2 style="color: #fff; margin-bottom: 20px; font-size: 2rem;">Coming Soon</h2>
-    <p style="color: #aebacd; font-size: 1.2rem; line-height: 1.6;">
+    <h2 style="margin-bottom: 20px; font-size: 2rem;">Coming Soon</h2>
+    <p style="font-size: 1.2rem; line-height: 1.6; opacity: 0.8;">
         This section is currently being mixed and mastered.<br>
         Check back soon for new content.
     </p>
