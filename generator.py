@@ -73,6 +73,7 @@ else:
 with open(template_path, 'r', encoding='utf-8') as f:
     master_template = f.read()
 
+# Adjust paths for the deeply nested archive files
 master_template = master_template.replace('href="style.css"', 'href="../style.css"')
 master_template = master_template.replace('href="request.html"', 'href="../request.html"')
 master_template = master_template.replace('href="/"', 'href="../index.html"')
@@ -193,16 +194,12 @@ for i, song in enumerate(songs_data):
     with open(os.path.join(lyrics_output, song['filename']), 'w', encoding='utf-8') as f: 
         f.write(html)
         
-    # NEW UI: Generate the rich media card structure
     track_num = str(i + 1).zfill(2)
     display_lang = song['language'].capitalize() if song['language'] != 'english' else 'Worship'
     song_identifier = song['apple_id'] if song['apple_id'] else song['title']
     
-    # 1. File creation time for Recently Added
     full_txt_path = os.path.join(lyrics_input, song['filename'].replace('.html', '.txt'))
     creation_time = os.path.getctime(full_txt_path) if os.path.exists(full_txt_path) else 0
-    
-    # 2. Strip numbers for Alphabetical sort
     clean_title = re.sub(r'^[\d\s\-]+', '', song["title"]).lower()
     
     lyrics_cards += f'''
@@ -235,7 +232,6 @@ for i, song in enumerate(songs_data):
     </a>
     '''
 
-# UI Updated with Glassmorphism Search Bar and JS sorting logic
 search_content = f'''
 <div class="glass-search-container">
     <div class="search-input-wrapper">
@@ -274,18 +270,17 @@ search_content = f'''
 </div>
 
 <script>
-    // Favorites System
     let favorites = JSON.parse(localStorage.getItem('lyric_favorites')) || [];
 
     document.querySelectorAll('.heart-icon').forEach(icon => {{
         let songId = icon.getAttribute('data-id');
         if (favorites.includes(songId)) {{
             icon.classList.add('active');
-            icon.innerHTML = '&#9829;'; // Filled heart
+            icon.innerHTML = '&#9829;'; 
         }}
         
         icon.addEventListener('click', function(e) {{
-            e.preventDefault(); // Stop link navigation
+            e.preventDefault(); 
             e.stopPropagation();
             
             let index = favorites.indexOf(songId);
@@ -296,7 +291,7 @@ search_content = f'''
             }} else {{
                 favorites.splice(index, 1);
                 this.classList.remove('active');
-                this.innerHTML = '&#9825;'; // Empty heart
+                this.innerHTML = '&#9825;'; 
             }}
             localStorage.setItem('lyric_favorites', JSON.stringify(favorites));
             
@@ -304,7 +299,6 @@ search_content = f'''
         }});
     }});
 
-    // Filtering & Sorting System
     let currentSort = 'alphabetical';
     
     document.querySelectorAll('.sort-tab').forEach(tab => {{
@@ -322,12 +316,10 @@ search_content = f'''
         let cards = Array.from(document.getElementsByClassName('interactive-card'));
         let grid = document.getElementById('lyricsGrid');
         
-        // 1. Filter visibility
         cards.forEach(card => {{
             let searchableText = card.getAttribute('data-title');
             let cardLang = card.getAttribute('data-language');
             
-            // Handle favoriting logic safely (Karaoke doesn't have hearts)
             let heartIcon = card.querySelector('.heart-icon');
             let songId = heartIcon ? heartIcon.getAttribute('data-id') : null;
             
@@ -338,23 +330,17 @@ search_content = f'''
             card.style.display = (matchesSearch && matchesLang && matchesFav) ? "flex" : "none";
         }});
         
-        // 2. Sort ALL cards to maintain DOM integrity
         if (currentSort === 'alphabetical') {{
-            // Python pre-cleaned the title to data-sort-name
             cards.sort((a, b) => a.getAttribute('data-sort-name').localeCompare(b.getAttribute('data-sort-name')));
         }} else if (currentSort === 'recent') {{
-            // Sort by hidden creation timestamp
             cards.sort((a, b) => parseFloat(b.getAttribute('data-time')) - parseFloat(a.getAttribute('data-time')));
         }} else {{
-            // Fallback for Favorites
             cards.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
         }}
         
-        // 3. Reattach in sorted order
         cards.forEach(card => grid.appendChild(card));
     }}
     
-    // Fire initial sort on load
     filterItems();
 
     document.getElementById('searchInput').addEventListener('input', filterItems);
@@ -419,12 +405,8 @@ for i, track in enumerate(karaoke_data):
         f.write(html)
         
     track_num = str(i + 1).zfill(2)
-    
-    # 1. File creation time for Recently Added
     full_txt_path = os.path.join(karaoke_input, track['filename'].replace('.html', '.txt'))
     creation_time = os.path.getctime(full_txt_path) if os.path.exists(full_txt_path) else 0
-    
-    # 2. Strip numbers for Alphabetical sort
     clean_title = re.sub(r'^[\d\s\-]+', '', track["title"]).lower()
     
     karaoke_cards += f'''
@@ -468,10 +450,77 @@ k_index_html = master_template.replace('{{TITLE}}', 'Karaoke Tracks')\
 with open(os.path.join(karaoke_output, 'index.html'), 'w', encoding='utf-8') as f: 
     f.write(k_index_html)
 
-print("Success! Hubs and static files fully generated.")
+# ==========================================
+# 3. GENERATE ROOT HUB & COMING SOON PAGES
+# ==========================================
+# Re-open a fresh template for root pages (keeps href paths clean)
+with open(template_path, 'r', encoding='utf-8') as f:
+    root_template = f.read()
+
+# Build the beautiful Glassmorphic Main Hub Grid
+home_content = '''
+<div class="glass-search-container" style="text-align: center; padding: 40px 20px;">
+    <h2 style="color: #fff; margin-bottom: 30px; font-size: 1.8rem;">Explore the Channel</h2>
+    
+    <div class="lyrics-grid">
+        <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
+            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">📖 Lyrics Archive</h3>
+            <p style="color: #aebacd; font-size: 1rem;">Search rare hymns and official songs.</p>
+        </a>
+        
+        <a href="karaoke-tracks/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
+            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">🎤 Karaoke Tracks</h3>
+            <p style="color: #aebacd; font-size: 1rem;">High-quality instrumentals for worship.</p>
+        </a>
+        
+        <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
+            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">✨ Testimonies</h3>
+            <p style="color: #aebacd; font-size: 1rem;">Powerful stories and biblical reflections.</p>
+        </a>
+        
+        <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
+            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">🎧 Remixes & Mashups</h3>
+            <p style="color: #aebacd; font-size: 1rem;">Listen to the latest channel releases.</p>
+        </a>
+    </div>
+</div>
+'''
+
+home_html = root_template.replace('{{TITLE}}', 'Malachi Daniel Hub')\
+                         .replace('{{ARTIST}}', 'Karaokes, Covers, Mashups & Rare Christian Lyrics')\
+                         .replace('{{CATEGORY}}', 'Hub')\
+                         .replace('{{LYRICS_CONTENT}}', home_content)\
+                         .replace('{{BACK_URL}}', '#')\
+                         .replace('{{BACK_TEXT}}', 'Welcome to the Hub')
+                         
+with open(os.path.join(BASE_DIR, 'public', 'index.html'), 'w', encoding='utf-8') as f:
+    f.write(home_html)
+
+# Build the Glassmorphic Coming Soon Page
+coming_soon_content = '''
+<div class="glass-search-container" style="text-align: center; padding: 60px 20px; margin-top: 20px;">
+    <h2 style="color: #fff; margin-bottom: 20px; font-size: 2rem;">Coming Soon</h2>
+    <p style="color: #aebacd; font-size: 1.2rem; line-height: 1.6;">
+        This section is currently being mixed and mastered.<br>
+        Check back soon for new content.
+    </p>
+</div>
+'''
+
+cs_html = root_template.replace('{{TITLE}}', 'Work In Progress 🚧')\
+                       .replace('{{ARTIST}}', 'We\'re Tuning Things Up!')\
+                       .replace('{{CATEGORY}}', 'Coming Soon')\
+                       .replace('{{LYRICS_CONTENT}}', coming_soon_content)\
+                       .replace('{{BACK_URL}}', 'index.html')\
+                       .replace('{{BACK_TEXT}}', 'Back to Main Hub')
+                       
+with open(os.path.join(BASE_DIR, 'public', 'coming-soon.html'), 'w', encoding='utf-8') as f:
+    f.write(cs_html)
+
+print("Success! Hubs, Root pages, and static files fully generated.")
 
 # ==========================================
-# 3. AUTOMATED SEO SITEMAP GENERATOR
+# 4. AUTOMATED SEO SITEMAP GENERATOR
 # ==========================================
 base_url = "https://malachidaniel.com"
 current_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -480,7 +529,7 @@ sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http:/
 def add_url_to_sitemap(path):
     return f"  <url>\n    <loc>{base_url}/{path}</loc>\n    <lastmod>{current_date}</lastmod>\n  </url>\n"
 
-for path in ["", "request.html", "lyrics-archive/index.html", "karaoke-tracks/index.html"]:
+for path in ["", "request.html", "lyrics-archive/index.html", "karaoke-tracks/index.html", "coming-soon.html"]:
     sitemap_content += add_url_to_sitemap(path)
 for song in songs_data:
     sitemap_content += add_url_to_sitemap(f"lyrics-archive/{song['filename']}")
@@ -495,13 +544,11 @@ print("SEO Sitemap successfully generated!")
 
 os.makedirs('public', exist_ok=True)
 
+# Copying over static assets
 if os.path.exists('templates/style.css'): shutil.copy('templates/style.css', 'public/style.css')
-if os.path.exists('templates/hub.css'): shutil.copy('templates/hub.css', 'public/hub.css')
 if os.path.exists('templates/lighter-bg.jpg'): shutil.copy('templates/lighter-bg.jpg', 'public/lighter-bg.jpg')
 if os.path.exists('templates/dark-bg.jpg'): shutil.copy('templates/dark-bg.jpg', 'public/dark-bg.jpg')
-if os.path.exists('home.html'): shutil.copy('home.html', 'public/index.html')
 if os.path.exists('logo.png'): shutil.copy('logo.png', 'public/logo.png')
-if os.path.exists('coming-soon.html'): shutil.copy('coming-soon.html', 'public/coming-soon.html')
 if os.path.exists('templates/request.html'): shutil.copy('templates/request.html', 'public/request.html')
 
 if os.path.exists('favicon.ico'): shutil.copy('favicon.ico', 'public/favicon.ico')
