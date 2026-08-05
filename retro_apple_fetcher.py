@@ -20,7 +20,7 @@ def search_apple_music(title, artist):
 print("========================================")
 print("     RETRO APPLE MUSIC ID FETCHER       ")
 print("========================================")
-print("🔍 Scanning raw_lyrics for missing Apple Music IDs...")
+print("🔍 Scanning raw_lyrics for missing or 'NONE' Apple Music IDs...")
 
 if not os.path.exists(DIR_PATH):
     print(f"❌ Directory '{DIR_PATH}' not found. Please run this in the project root.")
@@ -39,56 +39,84 @@ for filename in os.listdir(DIR_PATH):
     if len(lines) < 3:
         continue
         
-    # Check if apple_data already exists
-    has_apple = any(line.strip().lower() == "apple_data" for line in lines)
-    if has_apple:
-        continue
-        
     title = lines[0].strip()
     artist = lines[1].strip()
     
-    print(f"🎵 Fetching Apple Music ID for '{title}' by '{artist}'...")
-    track_id = search_apple_music(title, artist)
-    
-    # Locate insertion point
-    lyrics_idx = -1
-    meaning_idx = -1
-    
+    # Locate the apple_data tag if it exists
+    apple_idx = -1
     for i, line in enumerate(lines):
-        val = line.strip().lower()
-        if val == "lyrics":
-            lyrics_idx = i
-        elif val == "meaning":
-            meaning_idx = i
+        if line.strip().lower() == "apple_data":
+            apple_idx = i
+            break
             
-    new_content = []
-    
-    if lyrics_idx != -1:
-        # We found the lyrics tag, insert just before it
-        new_content = lines[:lyrics_idx]
-        new_content.extend(["apple_data\n", f"{track_id}\n"])
-        new_content.extend(lines[lyrics_idx:])
+    if apple_idx != -1:
+        # The file has 'apple_data'. Check the ID on the next line.
+        if apple_idx + 1 < len(lines):
+            current_id = lines[apple_idx + 1].strip().upper()
+            
+            if current_id != "NONE" and current_id != "":
+                # It already has a valid ID, skip this file
+                continue
+            else:
+                # It has "NONE" or is blank. Let's try to fetch again.
+                print(f"🔄 Re-fetching Apple Music ID for '{title}' by '{artist}'...")
+                track_id = search_apple_music(title, artist)
+                
+                if track_id != "NONE":
+                    lines[apple_idx + 1] = f"{track_id}\n"
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        f.writelines(lines)
+                    print(f"  ✅ Updated {filename} (New Track ID: {track_id})")
+                    updated_count += 1
+                else:
+                    print(f"  ❌ Still no ID found for {filename}.")
+                
+                time.sleep(1) # Be nice to Apple API
+                continue 
     else:
-        # No lyrics tag found
-        if meaning_idx != -1:
-            # Insert after meaning block (which is meaning tag + 1 line of text)
-            insert_pos = meaning_idx + 2
+        # Original logic: completely missing the apple_data tag
+        print(f"🎵 Fetching Apple Music ID for '{title}' by '{artist}'...")
+        track_id = search_apple_music(title, artist)
+        
+        # Locate insertion point
+        lyrics_idx = -1
+        meaning_idx = -1
+        
+        for i, line in enumerate(lines):
+            val = line.strip().lower()
+            if val == "lyrics":
+                lyrics_idx = i
+            elif val == "meaning":
+                meaning_idx = i
+                
+        new_content = []
+        
+        if lyrics_idx != -1:
+            # We found the lyrics tag, insert just before it
+            new_content = lines[:lyrics_idx]
+            new_content.extend(["apple_data\n", f"{track_id}\n"])
+            new_content.extend(lines[lyrics_idx:])
         else:
-            # No meaning either, insert after artist
-            insert_pos = 2
+            # No lyrics tag found
+            if meaning_idx != -1:
+                # Insert after meaning block (which is meaning tag + 1 line of text)
+                insert_pos = meaning_idx + 2
+            else:
+                # No meaning either, insert after artist
+                insert_pos = 2
+                
+            new_content = lines[:insert_pos]
+            new_content.extend(["apple_data\n", f"{track_id}\n", "lyrics\n"])
+            new_content.extend(lines[insert_pos:])
             
-        new_content = lines[:insert_pos]
-        new_content.extend(["apple_data\n", f"{track_id}\n", "lyrics\n"])
-        new_content.extend(lines[insert_pos:])
-        
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.writelines(new_content)
-        
-    print(f"  ✅ Updated {filename} (Track ID: {track_id})")
-    updated_count += 1
-    time.sleep(1) # Be nice to Apple API
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.writelines(new_content)
+            
+        print(f"  ✅ Added to {filename} (Track ID: {track_id})")
+        updated_count += 1
+        time.sleep(1) 
 
 if updated_count == 0:
-    print("\n✅ All files already have Apple Music data. You're all caught up!")
+    print("\n✅ All files already have valid Apple Music data. You're all caught up!")
 else:
     print(f"\n🎉 Successfully updated {updated_count} files with Apple Music IDs!")
