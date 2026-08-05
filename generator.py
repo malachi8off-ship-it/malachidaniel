@@ -17,6 +17,7 @@ css_input = os.path.join(BASE_DIR, 'templates', 'style.css')
 css_output = os.path.join(BASE_DIR, 'public', 'style.css')
 request_input = os.path.join(BASE_DIR, 'templates', 'request.html')
 request_output = os.path.join(BASE_DIR, 'public', 'request.html')
+presenter_input = os.path.join(BASE_DIR, 'templates', 'presenter.html')
 artwork_cache_file = os.path.join(BASE_DIR, 'artwork_cache.json')
 
 # Ensure all folders exist
@@ -43,7 +44,6 @@ def get_itunes_artwork(apple_id):
         with urllib.request.urlopen(req, timeout=5) as response:
             data = json.loads(response.read().decode('utf-8'))
             if data['resultCount'] > 0:
-                # Fetch a high-quality 600x600 image instead of the tiny default
                 art_url = data['results'][0]['artworkUrl100'].replace('100x100bb', '600x600bb')
                 artwork_cache[apple_id] = art_url
                 return art_url
@@ -58,38 +58,24 @@ if not os.path.exists(template_path):
     print(f"ERROR: Cannot find your template at {template_path}. Make sure it exists!")
     exit()
 
-if os.path.exists(css_input):
-    shutil.copy2(css_input, css_output)
-else:
-    print(f"WARNING: Cannot find {css_input}. Styling will be broken!")
-
-if os.path.exists(request_input):
-    shutil.copy2(request_input, request_output)
-elif os.path.exists(os.path.join(BASE_DIR, 'request.html')):
-    shutil.copy2(os.path.join(BASE_DIR, 'request.html'), request_output)
-else:
-    print("WARNING: Cannot find request.html!")
+if os.path.exists(css_input): shutil.copy2(css_input, css_output)
+if os.path.exists(request_input): shutil.copy2(request_input, request_output)
+elif os.path.exists(os.path.join(BASE_DIR, 'request.html')): shutil.copy2(os.path.join(BASE_DIR, 'request.html'), request_output)
+if os.path.exists(presenter_input): shutil.copy2(presenter_input, os.path.join(BASE_DIR, 'public', 'presenter.html'))
 
 with open(template_path, 'r', encoding='utf-8') as f:
     master_template = f.read()
 
-# Adjust paths for the deeply nested archive files
 master_template = master_template.replace('href="style.css"', 'href="../style.css"')
 master_template = master_template.replace('href="request.html"', 'href="../request.html"')
 master_template = master_template.replace('href="/"', 'href="../index.html"')
 
 def detect_language(text_to_check, lyrics_text=""):
-    """Smart auto-detection for languages based on keywords and unicode blocks."""
     text_to_check = text_to_check.lower()
-    
-    # Check for Malayalam/Manglish or native characters
     if "malayalam" in text_to_check or "manglish" in text_to_check or any('\u0D00' <= c <= '\u0D7F' for c in lyrics_text):
         return "malayalam"
-        
-    # Check for Hindi/Hinglish or native characters
     elif "hindi" in text_to_check or "hinglish" in text_to_check or any('\u0900' <= c <= '\u097F' for c in lyrics_text):
         return "hindi"
-    
     return "english"
 
 # ==========================================
@@ -100,7 +86,6 @@ for filename in os.listdir(lyrics_input):
     if filename.endswith('.txt'):
         with open(os.path.join(lyrics_input, filename), 'r', encoding='utf-8') as file:
             lines = [line.strip() for line in file.readlines()]
-            
             if len(lines) >= 2:
                 title = lines[0]
                 author = lines[1]
@@ -108,45 +93,34 @@ for filename in os.listdir(lyrics_input):
                 apple_id = ""
                 lyrics_text = ""
                 
-                # Check for meaning and apple_data (even if 'lyrics' tag is missing)
                 if "meaning" in lines and "apple_data" in lines:
                     idx_meaning = lines.index("meaning")
                     idx_apple = lines.index("apple_data")
-                    
                     meaning_lines = lines[idx_meaning + 1 : idx_apple]
                     meaning_text = " ".join([m for m in meaning_lines if m])
                     
-                    # Handle robustly whether the "lyrics" separator exists or not
                     if "lyrics" in lines:
                         idx_lyrics = lines.index("lyrics")
                         apple_lines = lines[idx_apple + 1 : idx_lyrics]
                         apple_id = apple_lines[0] if apple_lines else ""
                         lyrics_lines = lines[idx_lyrics + 1 :]
                     else:
-                        # Auto-repair for malformed files missing the 'lyrics' tag
                         apple_id = lines[idx_apple + 1] if len(lines) > idx_apple + 1 else ""
                         raw_lyrics = lines[idx_apple + 2 :]
-                        
-                        # Strip duplicated title/artist if AI accidentally appended the original file
                         if len(raw_lyrics) >= 2 and raw_lyrics[0] == title and raw_lyrics[1] == author:
                             lyrics_lines = raw_lyrics[2:]
                         else:
                             lyrics_lines = raw_lyrics
                     
-                    # STRICT FILTER: Ignore "NONE" or empty IDs
                     apple_id = apple_id if apple_id.upper() != "NONE" else ""
-                    
                     cleaned_lyrics = []
                     for line in lyrics_lines:
-                        if line == "" and (len(cleaned_lyrics) == 0 or cleaned_lyrics[-1] == ""):
-                            continue
+                        if line == "" and (len(cleaned_lyrics) == 0 or cleaned_lyrics[-1] == ""): continue
                         cleaned_lyrics.append(line)
                     lyrics_text = "<br>".join(cleaned_lyrics)
                 else:
-                    # True fallback for completely unprocessed files
                     lyrics_text = "<br>".join([l for l in lines[2:] if l])
                 
-                # Use our smart detector
                 lang_attr = detect_language(title + " " + meaning_text, lyrics_text)
                 
                 songs_data.append({
@@ -161,15 +135,32 @@ for filename in os.listdir(lyrics_input):
 
 songs_data.sort(key=lambda x: x['title'])
 lyrics_cards = ""
+api_payload = []
 
 for i, song in enumerate(songs_data):
     full_song_content = ""
     art_url = get_itunes_artwork(song['apple_id'])
     
+    # 1. ADD TO JSON API PAYLOAD
+    api_payload.append({
+        'id': song['filename'],
+        'title': song['title'],
+        'author': song['author'],
+        'lyrics': song['lyrics']
+    })
+    
     if song['apple_id']:
         full_song_content += f'''
 <div class="player-container">
     <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" class="apple-iframe" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
+</div>
+'''
+    # 2. INJECT PRESENTER VIEW BUTTON
+    full_song_content += f'''
+<div style="margin-top: 25px; margin-bottom: 30px; text-align: center;">
+    <a href="../presenter.html?song={song['filename']}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; color: #3498db; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: all 0.2s;">
+        📺 Launch Presenter View
+    </a>
 </div>
 '''
     full_song_content += f'<div class="lyric-text">{song["lyrics"]}</div>'
@@ -231,6 +222,10 @@ for i, song in enumerate(songs_data):
         </div>
     </a>
     '''
+
+# 3. WRITE THE JSON API FILE
+with open(os.path.join(BASE_DIR, 'public', 'lyrics_api.json'), 'w', encoding='utf-8') as f:
+    json.dump(api_payload, f)
 
 search_content = f'''
 <div class="glass-search-container">
@@ -362,7 +357,6 @@ index_html = master_template.replace('{{TITLE}}', 'Lyrics Archive')\
 with open(os.path.join(lyrics_output, 'index.html'), 'w', encoding='utf-8') as f: 
     f.write(index_html)
 
-# Save the fetched artwork links to cache
 with open(artwork_cache_file, 'w', encoding='utf-8') as f:
     json.dump(artwork_cache, f)
 
@@ -379,9 +373,7 @@ for filename in os.listdir(karaoke_input):
                 raw_link = lines[1]
                 desc = "<br>".join(lines[2:])
                 video_id = raw_link.split("v=")[1][:11] if "v=" in raw_link else (raw_link.split("youtu.be/")[1][:11] if "youtu.be/" in raw_link else raw_link)
-                
                 lang_attr = detect_language(title + " " + desc)
-                
                 karaoke_data.append({'title': title, 'video_id': video_id, 'desc': desc, 'filename': filename.replace('.txt', '.html'), 'language': lang_attr})
 
 karaoke_data.sort(key=lambda x: x['title'])
@@ -423,7 +415,6 @@ for i, track in enumerate(karaoke_data):
                     <span class="tag tag-genre">Instrumental</span>
                 </div>
             </div>
-            <!-- Disabled favoriting for karaoke to keep it simple -->
             <div class="heart-icon" style="display:none;"></div>
         </div>
         
@@ -453,11 +444,9 @@ with open(os.path.join(karaoke_output, 'index.html'), 'w', encoding='utf-8') as 
 # ==========================================
 # 3. GENERATE ROOT HUB & COMING SOON PAGES
 # ==========================================
-# Re-open a fresh template for root pages (keeps href paths clean)
 with open(template_path, 'r', encoding='utf-8') as f:
     root_template = f.read()
 
-# Build the beautiful Glassmorphic Main Hub Grid
 home_content = '''
 <div class="glass-search-container" style="text-align: center; padding: 40px 20px;">
     <h2 style="margin-bottom: 30px; font-size: 1.8rem;">Explore the Channel</h2>
@@ -496,7 +485,6 @@ home_html = root_template.replace('{{TITLE}}', 'Malachi Daniel Hub')\
 with open(os.path.join(BASE_DIR, 'public', 'index.html'), 'w', encoding='utf-8') as f:
     f.write(home_html)
 
-# Build the Glassmorphic Coming Soon Page
 coming_soon_content = '''
 <div class="glass-search-container" style="text-align: center; padding: 60px 20px; margin-top: 20px;">
     <h2 style="margin-bottom: 20px; font-size: 2rem;">Coming Soon</h2>
@@ -529,7 +517,7 @@ sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http:/
 def add_url_to_sitemap(path):
     return f"  <url>\n    <loc>{base_url}/{path}</loc>\n    <lastmod>{current_date}</lastmod>\n  </url>\n"
 
-for path in ["", "request.html", "lyrics-archive/index.html", "karaoke-tracks/index.html", "coming-soon.html"]:
+for path in ["", "request.html", "lyrics-archive/index.html", "karaoke-tracks/index.html", "coming-soon.html", "presenter.html"]:
     sitemap_content += add_url_to_sitemap(path)
 for song in songs_data:
     sitemap_content += add_url_to_sitemap(f"lyrics-archive/{song['filename']}")

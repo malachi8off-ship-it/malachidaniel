@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presenter View - Malachi Daniel Hub</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+            --font-size: 48px;
+            --font-family: 'Inter', system-ui, sans-serif;
+            --text-align: center;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: var(--text-align);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .title-block {
+            margin-bottom: 60px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .title-block h1 {
+            font-size: 2em;
+            margin: 0;
+            color: #3498db;
+        }
+
+        .title-block h2 {
+            font-size: 1.2em;
+            opacity: 0.7;
+            margin: 10px 0 0 0;
+            font-weight: 400;
+        }
+
+        #lyrics-container {
+            font-size: var(--font-size);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-width: 1400px;
+            width: 100%;
+            text-align: var(--text-align);
+            padding-bottom: 120px; /* Space for controls */
+        }
+
+        /* Glassmorphic Control Panel */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            opacity: 0; 
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        /* Fade in controls when mouse moves or on hover */
+        body.show-controls .controls, .controls:hover {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        select, input[type="range"] {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        option { background: #111; }
+
+        .close-btn {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title-block">
+        <h1 id="song-title">Loading Presenter...</h1>
+        <h2 id="song-artist"></h2>
+    </div>
+
+    <div id="lyrics-container"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Font:</label>
+            <select id="font-family">
+                <option value="'Inter', system-ui, sans-serif">Sans-Serif (Modern)</option>
+                <option value="'Georgia', serif">Serif (Classic)</option>
+                <option value="'Courier New', monospace">Monospace (Typewriter)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>Size:</label>
+            <input type="range" id="font-size" min="20" max="100" value="48">
+        </div>
+        
+        <div class="control-group">
+            <label>Align:</label>
+            <select id="text-align">
+                <option value="center">Center</option>
+                <option value="flex-start">Left</option>
+            </select>
+        </div>
+        
+        <a href="#" class="close-btn" onclick="window.close(); return false;">✕ Close</a>
+    </div>
+
+    <script>
+        // 1. Get the requested song from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const songId = urlParams.get('song');
+
+        if (!songId) {
+            document.getElementById('song-title').innerText = "Error: No song selected.";
+        } else {
+            // 2. Fetch the JSON database our Python script generated
+            fetch('lyrics_api.json')
+                .then(response => response.json())
+                .then(data => {
+                    const song = data.find(s => s.id === songId);
+                    if (song) {
+                        document.getElementById('song-title').innerText = song.title;
+                        document.getElementById('song-artist').innerText = song.author;
+                        document.getElementById('lyrics-container').innerHTML = song.lyrics;
+                    } else {
+                        document.getElementById('song-title').innerText = "Song not found in database.";
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('song-title').innerText = "Failed to load lyrics API.";
+                    console.error(err);
+                });
+        }
+
+        // 3. Live Typography Controls
+        const root = document.documentElement;
+
+        document.getElementById('font-family').addEventListener('change', (e) => {
+            root.style.setProperty('--font-family', e.target.value);
+        });
+
+        document.getElementById('font-size').addEventListener('input', (e) => {
+            root.style.setProperty('--font-size', e.target.value + 'px');
+        });
+
+        document.getElementById('text-align').addEventListener('change', (e) => {
+            root.style.setProperty('--text-align', e.target.value);
+            // Flexbox needs flex-start to align left globally, but text needs 'left'
+            document.getElementById('lyrics-container').style.textAlign = e.target.value === 'flex-start' ? 'left' : 'center';
+        });
+
+        // 4. Hide controls when the mouse is inactive for 2.5 seconds
+        let timeout;
+        document.addEventListener('mousemove', () => {
+            document.body.classList.add('show-controls');
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                document.body.classList.remove('show-controls');
+            }, 2500);
+        });
+    </script>
+</body>
+</html>
