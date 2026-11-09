@@ -1089,3 +1089,185 @@ body.light-mode .btn-reorder:hover {
     background: #0284c7;
     color: #ffffff;
 }
+
+/* ==========================================
+   VIBE & SCRIPTURE SEARCH / FILTER SYSTEM
+   ========================================== */
+.vibe-filter-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.filter-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-row-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.75px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    min-width: 150px;
+}
+
+.filter-pills-list {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+}
+
+.filter-pill:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.filter-pill.active {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    border-color: #38bdf8;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.filter-pill.pill-scripture.active {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    border-color: #fbbf24;
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+}
+
+.results-stats-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    padding-top: 0.5rem;
+}
+
+.btn-reset-filters {
+    background: transparent;
+    border: none;
+    color: #f87171;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.btn-reset-filters:hover {
+    color: #ef4444;
+}
+
+/* Card Badge Tags */
+.tag-vibe {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.tag-theme {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Homepage Quick Vibe Pills */
+.quick-vibe-pill {
+    font-size: 0.84rem;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quick-vibe-pill:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+}
+
+/* Light Mode Overrides */
+body.light-mode .filter-pill {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #475569;
+}
+
+body.light-mode .filter-pill:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: #0f172a;
+}
+
+body.light-mode .filter-pill.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+}
+
+body.light-mode .filter-pill.pill-scripture.active {
+    background: #d97706;
+    border-color: #d97706;
+    color: #ffffff;
+}
+
+body.light-mode .tag-vibe {
+    background: rgba(2, 132, 199, 0.1) !important;
+    color: #0284c7 !important;
+    border-color: rgba(2, 132, 199, 0.3);
+}
+
+body.light-mode .tag-theme {
+    background: rgba(217, 119, 6, 0.1) !important;
+    color: #b45309 !important;
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+body.light-mode .quick-vibe-pill {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #334155;
+}
+
+body.light-mode .quick-vibe-pill:hover {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+}

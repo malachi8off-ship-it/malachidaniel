@@ -93,6 +93,95 @@ def detect_language(text_to_check, lyrics_text=""):
         return "hindi"
     return "english"
 
+def classify_song(title, author, lyrics, meaning):
+    text_corpus = f"{title} {author} {lyrics} {meaning}".lower()
+    
+    # 1. Vibes
+    vibes = []
+    if re.search(r'\b(dance|dancing|shout|rejoice|joy|joyful|celebrate|celebration|clapping|sing aloud|gladness|cheerful|upbeat|fast|tempo|praise the lord|praise him|exalt|hallelujah)\b', text_corpus):
+        vibes.append('upbeat')
+    if re.search(r'\b(peace|peaceful|quiet|still|stillness|rest|comfort|weary|shelter|tears|solace|calm|gentle|refuge|haven|safe)\b', text_corpus):
+        vibes.append('peaceful')
+    if re.search(r'\b(battle|victory|victorious|conqueror|overcome|overcoming|chains|breakthrough|enemy|warfare|army|fight|stronghold|mighty warrior|triumph)\b', text_corpus):
+        vibes.append('warfare')
+    if re.search(r'\b(holy|worthy|bow down|adoration|awe|majesty|reverence|intimate|intimacy|surrender|throne|glory|presence|hallowed)\b', text_corpus):
+        vibes.append('deep-worship')
+    if not vibes:
+        vibes.append('worship')
+
+    # 2. Biblical Themes
+    themes = []
+    if re.search(r'\b(grace|mercy|unmerited|forgiven|forgiveness|kripa|compassion|cleansed)\b', text_corpus):
+        themes.append('grace')
+    if re.search(r'\b(cross|calvary|crucified|crucifixion|blood of jesus|lamb of god|resurrection|risen|tomb|redeemed|redemption|atonement|nails)\b', text_corpus):
+        themes.append('the-cross')
+    if re.search(r'\b(heal|healing|healer|sickness|disease|restored|restoration|wounds|cure|brokenhearted|changa)\b', text_corpus):
+        themes.append('healing')
+    if re.search(r'\b(holy spirit|spirit of god|anointing|fire fall|pentecost|comforter|ruach|pavitra aatma)\b', text_corpus):
+        themes.append('holy-spirit')
+    if re.search(r'\b(faith|trust|believe|assurance|unshakable|standing firm|faithful|faithfulness|visvasam|bharosa)\b', text_corpus):
+        themes.append('faith')
+    if re.search(r'\b(surrender|i give you my heart|take my life|all to jesus|consecrate|offering|my all)\b', text_corpus):
+        themes.append('surrender')
+
+    # 3. Specific Scripture Citations
+    scriptures = []
+    if re.search(r'\b(psalm[s]?\s*23|shepherd|green pastures|valley of the shadow|still waters|cup runneth over)\b', text_corpus):
+        scriptures.append('psalm-23')
+    if re.search(r'\b(psalm[s]?\s*103|bless the lord o my soul|forget not all his benefits)\b', text_corpus):
+        scriptures.append('psalm-103')
+    if re.search(r'\b(psalm[s]?\s*91|shadow of the almighty|refuge and fortress|under his wings|no evil shall befall)\b', text_corpus):
+        scriptures.append('psalm-91')
+    if re.search(r'\b(psalm[s]?\s*46|be still and know|refuge and strength|though the earth give way)\b', text_corpus):
+        scriptures.append('psalm-46')
+    if re.search(r'\b(romans\s*8|more than conquerors|no condemnation|who shall separate us)\b', text_corpus):
+        scriptures.append('romans-8')
+    if re.search(r'\b(isaiah\s*53|by his stripes|pierced for our transgressions|man of sorrows)\b', text_corpus):
+        scriptures.append('isaiah-53')
+    if re.search(r'\b(john\s*3|for god so loved the world|everlasting life|born again)\b', text_corpus):
+        scriptures.append('john-3')
+    if re.search(r'\b(philippians\s*4|i can do all things through christ|peace that passes all understanding)\b', text_corpus):
+        scriptures.append('philippians-4')
+
+    # Primary badges for card UI
+    primary_vibe_label = "🙏 Worship"
+    if "upbeat" in vibes:
+        primary_vibe_label = "⚡ Upbeat"
+    elif "warfare" in vibes:
+        primary_vibe_label = "⚔️ Warfare"
+    elif "peaceful" in vibes:
+        primary_vibe_label = "🌿 Peaceful"
+    elif "deep-worship" in vibes:
+        primary_vibe_label = "🕊️ Deep Worship"
+
+    primary_theme_label = ""
+    if "psalm-23" in scriptures:
+        primary_theme_label = "🐑 Psalm 23"
+    elif "psalm-103" in scriptures:
+        primary_theme_label = "📖 Psalm 103"
+    elif "romans-8" in scriptures:
+        primary_theme_label = "📖 Romans 8"
+    elif "john-3" in scriptures:
+        primary_theme_label = "📖 John 3"
+    elif "psalm-91" in scriptures:
+        primary_theme_label = "📖 Psalm 91"
+    elif "psalm-46" in scriptures:
+        primary_theme_label = "📖 Psalm 46"
+    elif "the-cross" in themes:
+        primary_theme_label = "✝️ The Cross"
+    elif "grace" in themes:
+        primary_theme_label = "✨ Grace"
+    elif "healing" in themes:
+        primary_theme_label = "🩹 Healing"
+    elif "holy-spirit" in themes:
+        primary_theme_label = "🔥 Holy Spirit"
+    elif "faith" in themes:
+        primary_theme_label = "🛡️ Faith"
+    elif "surrender" in themes:
+        primary_theme_label = "🙌 Surrender"
+
+    return vibes, themes, scriptures, primary_vibe_label, primary_theme_label
+
 # ==========================================
 # 1. LYRICS GENERATOR LOGIC
 # ==========================================
@@ -137,6 +226,7 @@ for filename in os.listdir(lyrics_input):
                     lyrics_text = "<br>".join([l for l in lines[2:] if l])
                 
                 lang_attr = detect_language(title + " " + meaning_text, lyrics_text)
+                vibes, themes, scriptures, primary_vibe_label, primary_theme_label = classify_song(title, author, lyrics_text, meaning_text)
                 
                 songs_data.append({
                     'title': title, 
@@ -145,7 +235,12 @@ for filename in os.listdir(lyrics_input):
                     'apple_id': apple_id,
                     'lyrics': lyrics_text, 
                     'filename': filename.replace('.txt', '.html'),
-                    'language': lang_attr
+                    'language': lang_attr,
+                    'vibes': vibes,
+                    'themes': themes,
+                    'scriptures': scriptures,
+                    'primary_vibe_label': primary_vibe_label,
+                    'primary_theme_label': primary_theme_label
                 })
 
 songs_data.sort(key=lambda x: x['title'])
@@ -161,7 +256,11 @@ for i, song in enumerate(songs_data):
         'id': song['filename'],
         'title': song['title'],
         'author': song['author'],
-        'lyrics': song['lyrics']
+        'lyrics': song['lyrics'],
+        'vibes': song['vibes'],
+        'themes': song['themes'],
+        'scriptures': song['scriptures'],
+        'language': song['language']
     })
     
     if song['apple_id']:
@@ -258,8 +357,40 @@ for i, song in enumerate(songs_data):
     creation_time = os.path.getctime(full_txt_path) if os.path.exists(full_txt_path) else 0
     clean_title = re.sub(r'^[\d\s\-]+', '', song["title"]).lower()
     
+    # Construct expanded search tokens and tags
+    theme_aliases = []
+    for t in song['themes']:
+        if t == 'grace': theme_aliases.extend(['grace', 'mercy', 'forgiveness'])
+        elif t == 'the-cross': theme_aliases.extend(['cross', 'calvary', 'resurrection'])
+        elif t == 'healing': theme_aliases.extend(['heal', 'healing', 'healer', 'changa'])
+        elif t == 'holy-spirit': theme_aliases.extend(['holy spirit', 'spirit', 'anointing'])
+        elif t == 'faith': theme_aliases.extend(['faith', 'trust', 'faithful'])
+        elif t == 'surrender': theme_aliases.extend(['surrender', 'consecration'])
+
+    for s in song['scriptures']:
+        if s == 'psalm-23': theme_aliases.extend(['psalm 23', 'psalm23', 'shepherd', 'psalms 23'])
+        elif s == 'psalm-103': theme_aliases.extend(['psalm 103', 'psalm103', 'bless the lord', 'psalms 103'])
+        elif s == 'psalm-91': theme_aliases.extend(['psalm 91', 'psalm91', 'refuge', 'fortress', 'psalms 91'])
+        elif s == 'psalm-46': theme_aliases.extend(['psalm 46', 'psalm46', 'be still', 'psalms 46'])
+        elif s == 'romans-8': theme_aliases.extend(['romans 8', 'romans8', 'conquerors', 'no condemnation'])
+        elif s == 'isaiah-53': theme_aliases.extend(['isaiah 53', 'isaiah53', 'by his stripes'])
+        elif s == 'john-3': theme_aliases.extend(['john 3', 'john3', 'john 3:16'])
+        elif s == 'philippians-4': theme_aliases.extend(['philippians 4', 'philippians4', 'rejoice'])
+
+    for v in song['vibes']:
+        if v == 'upbeat': theme_aliases.extend(['upbeat', 'fast', 'praise', 'dance', 'joy'])
+        elif v == 'peaceful': theme_aliases.extend(['peaceful', 'peace', 'quiet', 'rest', 'calm'])
+        elif v == 'warfare': theme_aliases.extend(['warfare', 'battle', 'victory', 'anthem'])
+        elif v == 'deep-worship': theme_aliases.extend(['deep worship', 'holy', 'majesty', 'awe'])
+
+    searchable_blob = f"{song['title'].lower()} {song['author'].lower()} {' '.join(song['vibes'])} {' '.join(song['themes'])} {' '.join(song['scriptures'])} {' '.join(theme_aliases)}".replace('"', '&quot;')
+    vibes_attr = ' '.join(song['vibes'])
+    themes_attr = ' '.join(song['themes'])
+    scrip_attr = ' '.join(song['scriptures'])
+    theme_badge_html = f'<span class="tag tag-theme">{song["primary_theme_label"]}</span>' if song['primary_theme_label'] else ''
+
     lyrics_cards += f'''
-    <a href="{song["filename"]}" class="song-card interactive-card" data-index="{i}" data-time="{creation_time}" data-sort-name="{clean_title}" data-language="{song["language"]}" data-title="{song["title"].lower()} {song["author"].lower()}">
+    <a href="{song["filename"]}" class="song-card interactive-card" data-index="{i}" data-time="{creation_time}" data-sort-name="{clean_title}" data-language="{song["language"]}" data-vibe="{vibes_attr}" data-theme="{themes_attr}" data-scripture="{scrip_attr}" data-title="{searchable_blob}">
         <div class="card-top">
             <div class="thumbnail-wrapper">
                 <img src="{art_url}" class="album-thumb" alt="Cover" onerror="this.src='../logo.png'">
@@ -270,7 +401,8 @@ for i, song in enumerate(songs_data):
                 <div class="tags">
                     <span class="tag tag-num">{track_num}</span>
                     <span class="tag tag-genre">{display_lang}</span>
-                    <span class="tag tag-vibe">Uplifting</span>
+                    <span class="tag tag-vibe">{song["primary_vibe_label"]}</span>
+                    {theme_badge_html}
                 </div>
             </div>
             <div class="heart-icon" data-id="{song_identifier}">&#9825;</div>
@@ -296,7 +428,7 @@ search_content = f'''
 <div class="glass-search-container">
     <div class="search-input-wrapper">
         <span class="search-icon">&#128269;</span>
-        <input type="text" id="searchInput" placeholder="Search by Artist, Song Title, or Lyrics...">
+        <input type="text" id="searchInput" placeholder="Search by Title, Artist, Vibe (e.g. 'upbeat grace'), or Scripture (e.g. 'Psalm 23')...">
         <span class="clear-icon" id="clearSearch">&#10005;</span>
     </div>
     
@@ -323,6 +455,43 @@ search_content = f'''
             </div>
         </div>
     </div>
+
+    <!-- Vibe & Scripture Filter System -->
+    <div class="vibe-filter-container">
+        <!-- Vibe row -->
+        <div class="filter-pills-row">
+            <span class="filter-row-title">⚡ Vibe / Mood:</span>
+            <div class="filter-pills-list" id="vibeFilterPills">
+                <button type="button" class="filter-pill active" data-vibe="all">All Vibes</button>
+                <button type="button" class="filter-pill" data-vibe="upbeat">⚡ Upbeat Praise</button>
+                <button type="button" class="filter-pill" data-vibe="deep-worship">🕊️ Deep Worship</button>
+                <button type="button" class="filter-pill" data-vibe="peaceful">🌿 Peaceful &amp; Rest</button>
+                <button type="button" class="filter-pill" data-vibe="warfare">⚔️ Spiritual Warfare</button>
+            </div>
+        </div>
+        
+        <!-- Scripture & Theme row -->
+        <div class="filter-pills-row">
+            <span class="filter-row-title">📖 Scripture &amp; Theme:</span>
+            <div class="filter-pills-list" id="themeFilterPills">
+                <button type="button" class="filter-pill active" data-theme="all">All Themes</button>
+                <button type="button" class="filter-pill" data-theme="grace">✨ Grace &amp; Mercy</button>
+                <button type="button" class="filter-pill" data-theme="the-cross">✝️ The Cross</button>
+                <button type="button" class="filter-pill" data-theme="healing">🩹 Healing</button>
+                <button type="button" class="filter-pill" data-theme="holy-spirit">🔥 Holy Spirit</button>
+                <button type="button" class="filter-pill" data-theme="faith">🛡️ Faith &amp; Trust</button>
+                <button type="button" class="filter-pill pill-scripture" data-theme="psalm-23">🐑 Psalm 23</button>
+                <button type="button" class="filter-pill pill-scripture" data-theme="psalm-103">📖 Psalm 103</button>
+                <button type="button" class="filter-pill pill-scripture" data-theme="psalm-91">🏔️ Psalm 91</button>
+                <button type="button" class="filter-pill pill-scripture" data-theme="romans-8">🕊️ Romans 8</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="results-stats-row">
+        <span id="resultsCount">Showing all songs</span>
+        <button id="resetAllFilters" class="btn-reset-filters" style="display: none;">✕ Clear all filters</button>
+    </div>
 </div>
 
 <div class="lyrics-grid" id="lyricsGrid">
@@ -331,6 +500,9 @@ search_content = f'''
 
 <script>
     let favorites = JSON.parse(localStorage.getItem('lyric_favorites')) || [];
+    let currentSort = 'alphabetical';
+    let currentVibe = 'all';
+    let currentTheme = 'all';
 
     document.querySelectorAll('.heart-icon').forEach(icon => {{
         let songId = icon.getAttribute('data-id');
@@ -359,8 +531,6 @@ search_content = f'''
         }});
     }});
 
-    let currentSort = 'alphabetical';
-    
     document.querySelectorAll('.sort-tab').forEach(tab => {{
         tab.addEventListener('click', function() {{
             document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
@@ -370,25 +540,94 @@ search_content = f'''
         }});
     }});
 
+    // Vibe pills setup
+    document.querySelectorAll('#vibeFilterPills .filter-pill').forEach(pill => {{
+        pill.addEventListener('click', function() {{
+            document.querySelectorAll('#vibeFilterPills .filter-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            currentVibe = this.getAttribute('data-vibe');
+            filterItems();
+        }});
+    }});
+
+    // Theme & Scripture pills setup
+    document.querySelectorAll('#themeFilterPills .filter-pill').forEach(pill => {{
+        pill.addEventListener('click', function() {{
+            document.querySelectorAll('#themeFilterPills .filter-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            currentTheme = this.getAttribute('data-theme');
+            filterItems();
+        }});
+    }});
+
+    // Reset button setup
+    let resetBtn = document.getElementById('resetAllFilters');
+    if (resetBtn) {{
+        resetBtn.addEventListener('click', function() {{
+            document.getElementById('searchInput').value = '';
+            document.getElementById('langFilter').value = 'all';
+            currentVibe = 'all';
+            currentTheme = 'all';
+            document.querySelectorAll('#vibeFilterPills .filter-pill').forEach(p => {{
+                p.classList.toggle('active', p.getAttribute('data-vibe') === 'all');
+            }});
+            document.querySelectorAll('#themeFilterPills .filter-pill').forEach(p => {{
+                p.classList.toggle('active', p.getAttribute('data-theme') === 'all');
+            }});
+            filterItems();
+        }});
+    }}
+
     function filterItems() {{
-        let searchText = document.getElementById('searchInput').value.toLowerCase();
+        let rawSearch = document.getElementById('searchInput').value.toLowerCase().trim();
         let selectedLang = document.getElementById('langFilter').value;
         let cards = Array.from(document.getElementsByClassName('interactive-card'));
         let grid = document.getElementById('lyricsGrid');
+        let resultsCount = document.getElementById('resultsCount');
+        let resetBtn = document.getElementById('resetAllFilters');
+        
+        // Clean natural language conversational phrases
+        let cleaned = rawSearch
+            .replace(/\\b(songs?\\s+about|songs?\\s+on|songs?\\s+based\\s+on|songs?\\s+for|hymns?\\s+about|hymns?\\s+on|music\\s+about|worship\\s+songs?\\s+about|tracks?\\s+about)\\b/gi, ' ')
+            .replace(/[^\\w\\s-]/g, ' ')
+            .trim();
+        
+        let searchTerms = cleaned.split(/\\s+/).filter(t => t.length > 0 && !['and', 'the', 'in', 'of', 'to', 'a', 'an', 'is'].includes(t));
+        let visibleCount = 0;
         
         cards.forEach(card => {{
-            let searchableText = card.getAttribute('data-title');
-            let cardLang = card.getAttribute('data-language');
+            let searchableText = card.getAttribute('data-title') || '';
+            let cardLang = card.getAttribute('data-language') || '';
+            let cardVibes = (card.getAttribute('data-vibe') || '').split(' ');
+            let cardThemes = (card.getAttribute('data-theme') || '').split(' ');
+            let cardScriptures = (card.getAttribute('data-scripture') || '').split(' ');
             
             let heartIcon = card.querySelector('.heart-icon');
             let songId = heartIcon ? heartIcon.getAttribute('data-id') : null;
             
-            let matchesSearch = searchableText.includes(searchText);
+            let matchesSearch = true;
+            if (searchTerms.length > 0) {{
+                matchesSearch = searchTerms.every(term => searchableText.includes(term));
+            }}
             let matchesLang = (selectedLang === 'all' || cardLang === selectedLang);
             let matchesFav = (currentSort !== 'favorites' || (songId && favorites.includes(songId)));
+            let matchesVibe = (currentVibe === 'all' || cardVibes.includes(currentVibe));
+            let matchesTheme = (currentTheme === 'all' || cardThemes.includes(currentTheme) || cardScriptures.includes(currentTheme));
             
-            card.style.display = (matchesSearch && matchesLang && matchesFav) ? "flex" : "none";
+            let isVisible = matchesSearch && matchesLang && matchesFav && matchesVibe && matchesTheme;
+            card.style.display = isVisible ? 'flex' : 'none';
+            if (isVisible) visibleCount++;
         }});
+
+        let hasFilter = (rawSearch !== '' || selectedLang !== 'all' || currentVibe !== 'all' || currentTheme !== 'all' || currentSort === 'favorites');
+        if (resetBtn) resetBtn.style.display = hasFilter ? 'inline-block' : 'none';
+        if (resultsCount) {{
+            if (!hasFilter) {{
+                resultsCount.textContent = 'Showing all ' + visibleCount + ' songs';
+            }} else {{
+                resultsCount.textContent = 'Found ' + visibleCount + ' matching song' + (visibleCount === 1 ? '' : 's');
+            }}
+        }}
         
         if (currentSort === 'alphabetical') {{
             cards.sort((a, b) => a.getAttribute('data-sort-name').localeCompare(b.getAttribute('data-sort-name')));
@@ -399,6 +638,36 @@ search_content = f'''
         }}
         
         cards.forEach(card => grid.appendChild(card));
+    }}
+
+    // Check URL parameters on load (e.g. ?theme=grace or ?theme=psalm-23 or ?vibe=upbeat)
+    let urlParams = new URLSearchParams(window.location.search);
+    let urlVibe = urlParams.get('vibe');
+    let urlTheme = urlParams.get('theme') || urlParams.get('scripture');
+    let urlQuery = urlParams.get('q');
+    let urlLang = urlParams.get('lang');
+
+    if (urlQuery) {{
+        document.getElementById('searchInput').value = urlQuery;
+    }}
+    if (urlLang) {{
+        document.getElementById('langFilter').value = urlLang;
+    }}
+    if (urlVibe) {{
+        let matchingPill = document.querySelector('#vibeFilterPills .filter-pill[data-vibe="' + urlVibe + '"]');
+        if (matchingPill) {{
+            document.querySelectorAll('#vibeFilterPills .filter-pill').forEach(p => p.classList.remove('active'));
+            matchingPill.classList.add('active');
+            currentVibe = urlVibe;
+        }}
+    }}
+    if (urlTheme) {{
+        let matchingPill = document.querySelector('#themeFilterPills .filter-pill[data-theme="' + urlTheme + '"]');
+        if (matchingPill) {{
+            document.querySelectorAll('#themeFilterPills .filter-pill').forEach(p => p.classList.remove('active'));
+            matchingPill.classList.add('active');
+            currentTheme = urlTheme;
+        }}
     }}
     
     filterItems();
@@ -527,7 +796,7 @@ home_content = '''
     </p>
 
     <!-- Quick Navigation Hub Pills -->
-    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 25px;">
         <a href="lyrics-archive/index.html" class="btn-primary" style="padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
             📖 Explore 660+ Lyrics
         </a>
@@ -540,6 +809,24 @@ home_content = '''
         <a href="karaoke-tracks/index.html" class="btn-primary" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
             🎤 Worship Karaokes
         </a>
+    </div>
+
+    <!-- Quick Vibe & Scripture Finder Row -->
+    <div style="margin-top: 15px; margin-bottom: 10px; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.75px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>🔍 Search Songs by Vibe &amp; Scripture:</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 860px; margin: 0 auto;">
+            <a href="lyrics-archive/index.html?theme=grace" class="quick-vibe-pill">✨ Grace &amp; Mercy</a>
+            <a href="lyrics-archive/index.html?theme=psalm-23" class="quick-vibe-pill">🐑 Psalm 23</a>
+            <a href="lyrics-archive/index.html?vibe=upbeat" class="quick-vibe-pill">⚡ Upbeat Praise</a>
+            <a href="lyrics-archive/index.html?vibe=deep-worship" class="quick-vibe-pill">🕊️ Deep Worship</a>
+            <a href="lyrics-archive/index.html?theme=the-cross" class="quick-vibe-pill">✝️ The Cross</a>
+            <a href="lyrics-archive/index.html?theme=healing" class="quick-vibe-pill">🩹 Healing</a>
+            <a href="lyrics-archive/index.html?theme=faith" class="quick-vibe-pill">🛡️ Faith &amp; Trust</a>
+            <a href="lyrics-archive/index.html?theme=psalm-103" class="quick-vibe-pill">📖 Psalm 103</a>
+            <a href="lyrics-archive/index.html?theme=romans-8" class="quick-vibe-pill">🕊️ Romans 8</a>
+        </div>
     </div>
 </div>
 
