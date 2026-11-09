@@ -64,6 +64,12 @@ if os.path.exists(request_input): shutil.copy2(request_input, request_output)
 elif os.path.exists(os.path.join(BASE_DIR, 'request.html')): shutil.copy2(os.path.join(BASE_DIR, 'request.html'), request_output)
 if os.path.exists(presenter_input): shutil.copy2(presenter_input, os.path.join(BASE_DIR, 'public', 'presenter.html'))
 
+chords_input = os.path.join(BASE_DIR, 'templates', 'chords.js')
+if os.path.exists(chords_input): shutil.copy2(chords_input, os.path.join(BASE_DIR, 'public', 'chords.js'))
+
+setlist_input = os.path.join(BASE_DIR, 'templates', 'setlist.html')
+if os.path.exists(setlist_input): shutil.copy2(setlist_input, os.path.join(BASE_DIR, 'public', 'setlist.html'))
+
 bible_input = os.path.join(BASE_DIR, 'templates', 'bible.html')
 if os.path.exists(bible_input): shutil.copy2(bible_input, os.path.join(BASE_DIR, 'public', 'bible.html'))
 
@@ -76,6 +82,8 @@ with open(template_path, 'r', encoding='utf-8') as f:
 master_template = master_template.replace('href="style.css"', 'href="../style.css"')
 master_template = master_template.replace('href="request.html"', 'href="../request.html"')
 master_template = master_template.replace('href="bible.html"', 'href="../bible.html"')
+master_template = master_template.replace('href="setlist.html"', 'href="../setlist.html"')
+master_template = master_template.replace('src="chords.js"', 'src="../chords.js"')
 master_template = master_template.replace('href="/"', 'href="../index.html"')
 
 def detect_language(text_to_check, lyrics_text=""):
@@ -510,6 +518,11 @@ home_content = '''
             <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Multi-lingual scripture in English, Malayalam & Hindi with church projection.</p>
         </a>
 
+        <a href="setlist.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
+            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">📋 Sunday Setlist</h3>
+            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Plan worship flow, set song keys, and project entire services seamlessly.</p>
+        </a>
+
         <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
             <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">📖 Lyrics Archive</h3>
             <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Search rare hymns and official songs.</p>
@@ -575,7 +588,7 @@ sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http:/
 def add_url_to_sitemap(path):
     return f"  <url>\n    <loc>{base_url}/{path}</loc>\n    <lastmod>{current_date}</lastmod>\n  </url>\n"
 
-for path in ["", "request.html", "bible.html", "lyrics-archive/index.html", "karaoke-tracks/index.html", "coming-soon.html", "presenter.html"]:
+for path in ["", "request.html", "bible.html", "setlist.html", "lyrics-archive/index.html", "karaoke-tracks/index.html", "coming-soon.html", "presenter.html"]:
     sitemap_content += add_url_to_sitemap(path)
 for song in songs_data:
     sitemap_content += add_url_to_sitemap(f"lyrics-archive/{song['filename']}")

@@ -62,9 +62,20 @@
         body.theme-ambient-purple {
             --bg-theme: radial-gradient(circle at center, #261230 0%, #0a040d 100%);
         }
-        body.theme-lower-third {
+        body.theme-lower-third,
+        body.mode-obs {
             --bg-theme: transparent;
             background: transparent !important;
+            background-color: transparent !important;
+        }
+
+        body.mode-obs .top-bar,
+        body.mode-obs .bottom-bar,
+        body.mode-obs .control-dock,
+        body.mode-obs .nav-btn,
+        body.mode-obs .progress-bar-container,
+        body.mode-obs .drawer-overlay {
+            display: none !important;
         }
 
         /* --- TOP HEADER (SONG META & LIVE CLOCK) --- */
@@ -194,24 +205,54 @@
             white-space: pre-line;
         }
 
-        body.theme-lower-third .slide-text {
-            background: rgba(0, 0, 0, 0.75);
-            padding: 20px 40px;
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            font-size: clamp(28px, 4vw, 42px);
+        body.theme-lower-third .slide-stage,
+        body.mode-obs .slide-stage {
+            justify-content: flex-end;
+            padding-bottom: 50px;
+            padding-left: 40px;
+            padding-right: 40px;
+            align-items: center;
         }
 
-        body.theme-lower-third .primary-text {
-            font-size: clamp(26px, 3.8vw, 38px);
+        body.theme-lower-third .slide-text,
+        body.mode-obs .slide-text {
+            background: rgba(10, 15, 26, 0.88);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.2);
+            padding: 22px 45px;
+            border-radius: 20px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            max-width: 1300px;
+            width: auto;
+            font-size: clamp(26px, 3.2vw, 38px);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+            margin-bottom: 20px;
         }
 
-        body.theme-lower-third .parallel-divider {
+        body.theme-lower-third .primary-text,
+        body.mode-obs .primary-text {
+            font-size: clamp(24px, 3vw, 36px);
+        }
+
+        body.theme-lower-third .parallel-divider,
+        body.mode-obs .parallel-divider {
             margin: 10px auto;
         }
 
-        body.theme-lower-third .secondary-text {
-            font-size: clamp(22px, 3.2vw, 32px);
+        body.theme-lower-third .secondary-text,
+        body.mode-obs .secondary-text {
+            font-size: clamp(20px, 2.6vw, 30px);
+        }
+
+        body.theme-lower-third .verse-badge,
+        body.mode-obs .verse-badge {
+            background: rgba(56, 189, 248, 0.25);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
         }
 
         /* Blackout State */
@@ -585,6 +626,11 @@
             <span>📑</span> Grid (G)
         </button>
 
+        <!-- Copy OBS Overlay URL -->
+        <button class="dock-btn" id="btn-copy-obs" title="Copy Transparent Lower-Third Overlay URL for OBS Studio / Live Stream">
+            <span>📡</span> OBS URL
+        </button>
+
         <!-- Fullscreen Toggle -->
         <button class="dock-btn" id="btn-fullscreen" title="Toggle Fullscreen (Press F)">
             <span>⛶</span> Fullscreen
@@ -676,8 +722,56 @@
                 .replace(/'/g, '&#039;');
         }
 
+        // --- BROADCAST / REAL-TIME OBS & MULTI-SCREEN SYNC BUS ---
+        const worshipBus = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('church_worship_bus') : null;
+
+        function broadcastSlideState(idx) {
+            const payload = {
+                type: 'SLIDE_CHANGE',
+                index: idx,
+                isBlackout: isBlackout,
+                slide: slides[idx],
+                timestamp: Date.now()
+            };
+            if (worshipBus) {
+                try { worshipBus.postMessage(payload); } catch(e) {}
+            }
+            try {
+                localStorage.setItem('church_live_slide_sync', JSON.stringify(payload));
+            } catch(e) {}
+        }
+
+        if (worshipBus) {
+            worshipBus.onmessage = (event) => {
+                if (event.data && event.data.type === 'SLIDE_CHANGE') {
+                    handleRemoteSlideSync(event.data);
+                }
+            };
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'church_live_slide_sync' && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    handleRemoteSlideSync(data);
+                } catch(err) {}
+            }
+        });
+
+        function handleRemoteSlideSync(data) {
+            if (data.isBlackout !== undefined && data.isBlackout !== isBlackout) {
+                isBlackout = data.isBlackout;
+                document.body.classList.toggle('blackout', isBlackout);
+                const btn = document.getElementById('btn-blackout');
+                if (btn) btn.classList.toggle('active', isBlackout);
+            }
+            if (data.index !== undefined && data.index !== currentIndex) {
+                renderSlide(data.index, false);
+            }
+        }
+
         // --- 3. RENDER CURRENT SLIDE ---
-        function renderSlide(index) {
+        function renderSlide(index, shouldBroadcast = true) {
             if (slides.length === 0) return;
             if (index < 0) index = 0;
             if (index >= slides.length) index = slides.length - 1;
@@ -713,6 +807,9 @@
             progress.style.width = `${pct}%`;
 
             updateDrawerActive();
+            if (shouldBroadcast) {
+                broadcastSlideState(currentIndex);
+            }
         }
 
         function nextSlide() {
@@ -734,6 +831,11 @@
         const scriptureRef = urlParams.get('ref');
         const scriptureVerse = urlParams.get('verse');
         const scriptureSecondary = urlParams.get('secondary');
+
+        // Check for OBS Lower-Third / Transparent Broadcast Overlay
+        if (urlParams.get('mode') === 'lower-third' || urlParams.get('obs') === '1') {
+            document.body.classList.add('mode-obs', 'theme-lower-third');
+        }
 
         let dataLoaded = false;
 
@@ -858,10 +960,11 @@
             isBlackout = !isBlackout;
             document.body.classList.toggle('blackout', isBlackout);
             document.getElementById('btn-blackout').classList.toggle('active', isBlackout);
+            broadcastSlideState(currentIndex);
         }
         document.getElementById('btn-blackout').addEventListener('click', toggleBlackout);
 
-        // --- 7. FULLSCREEN ---
+        // --- 7. FULLSCREEN & OBS OVERLAY URL COPY ---
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -870,6 +973,22 @@
             }
         }
         document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
+
+        const btnCopyObs = document.getElementById('btn-copy-obs');
+        if (btnCopyObs) {
+            btnCopyObs.addEventListener('click', () => {
+                const obsUrl = `${window.location.origin}/presenter.html?mode=lower-third`;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(obsUrl).then(() => {
+                        alert(`✅ OBS Browser Source URL copied to clipboard!\n\n${obsUrl}\n\nHow to use in OBS Studio:\n1. Click '+' in Sources ➔ Select 'Browser'\n2. Paste this URL into the URL field\n3. Set Width: 1920, Height: 1080\n4. Leave Custom CSS blank.\n\nWhatever slide you display here will automatically display transparently over your live camera feed in real time!`);
+                    }).catch(() => {
+                        prompt("Copy your OBS Browser Source URL below:", obsUrl);
+                    });
+                } else {
+                    prompt("Copy your OBS Browser Source URL below:", obsUrl);
+                }
+            });
+        }
 
         // --- 8. LIVE CONTROLS (FONT, SIZE, THEME) ---
         const root = document.documentElement;
