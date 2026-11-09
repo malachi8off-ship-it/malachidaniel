@@ -91,6 +91,16 @@
                 localStorage.setItem('theme', 'dark');
             }
         });
+
+        // Lightweight privacy-friendly analytics
+        try {
+            const p = window.location.pathname;
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon('/api/view', JSON.stringify({ p }));
+            } else {
+                fetch('/api/view?p=' + encodeURIComponent(p), { method: 'POST', keepalive: true });
+            }
+        } catch(e) {}
     </script>
 </body>
 </html>
