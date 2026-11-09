@@ -3,6 +3,7 @@ import datetime
 import shutil
 import re
 import urllib.request
+import urllib.parse
 import json
 
 # --- BULLETPROOF PATHS ---
@@ -153,6 +154,51 @@ for i, song in enumerate(songs_data):
         full_song_content += f'''
 <div class="player-container">
     <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="150" class="apple-iframe" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/-/1?i={song['apple_id']}"></iframe>
+</div>
+'''
+
+    # Clean query for external streaming platforms
+    c_title = re.sub(r'\|.*$', '', song['title'])
+    c_title = re.sub(r'\((official|video|audio|lyric|visualizer|music video|lyric video|official audio|official video|cover|remix)[^)]*\)', '', c_title, flags=re.IGNORECASE)
+    c_title = re.sub(r'\[(official|video|audio|lyric|visualizer|music video|lyric video|official audio|official video|cover|remix)[^\]]*\]', '', c_title, flags=re.IGNORECASE)
+    c_title = c_title.replace('"', '').strip()
+    
+    c_author = re.sub(r'\|.*$', '', song['author'])
+    c_author = re.sub(r'@\w+', '', c_author).strip()
+    
+    stream_query = urllib.parse.quote(f"{c_title} {c_author}".strip())
+    
+    spotify_url = f"https://open.spotify.com/search/{stream_query}"
+    yt_music_url = f"https://music.youtube.com/search?q={stream_query}"
+    youtube_url = f"https://www.youtube.com/results?search_query={stream_query}"
+    amazon_music_url = f"https://music.amazon.com/search/{stream_query}"
+    apple_music_url = f"https://music.apple.com/us/album/-/1?i={song['apple_id']}" if song['apple_id'] else f"https://music.apple.com/us/search?term={stream_query}"
+
+    full_song_content += f'''
+<div class="streaming-hub">
+    <span class="streaming-hub-title">🎧 Stream on Your Preferred Platform</span>
+    <div class="streaming-badges">
+        <a href="{spotify_url}" target="_blank" rel="noopener noreferrer" class="stream-badge spotify" title="Listen on Spotify">
+            <svg viewBox="0 0 24 24" class="stream-icon"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 5.524 4.477 10 10 10s10-4.476 10-10c0-5.523-4.477-10-10-10zm4.587 14.428c-.18.295-.563.387-.857.208-2.35-1.434-5.308-1.758-8.793-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.496 9.721 1.112.294.18.388.563.208.857zm1.233-2.74c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.849-.107-.975-.521-.127-.414.108-.849.522-.976 3.632-1.102 8.147-.568 11.233 1.332.366.227.482.707.257 1.074zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.838.327 1.282-.264.443-.838.59-1.274.314z"/></svg>
+            <span>Spotify</span>
+        </a>
+        <a href="{yt_music_url}" target="_blank" rel="noopener noreferrer" class="stream-badge yt-music" title="Listen on YouTube Music">
+            <svg viewBox="0 0 24 24" class="stream-icon"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/><polygon fill="currentColor" points="10,8.5 16,12 10,15.5"/></svg>
+            <span>YouTube Music</span>
+        </a>
+        <a href="{apple_music_url}" target="_blank" rel="noopener noreferrer" class="stream-badge apple-music" title="Listen on Apple Music">
+            <svg viewBox="0 0 24 24" class="stream-icon"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.87-.96.04-2.12.64-2.81 1.45-.6.71-1.13 1.83-1 2.87 1.07.08 2.18-.7 2.8-1.45z"/></svg>
+            <span>Apple Music</span>
+        </a>
+        <a href="{youtube_url}" target="_blank" rel="noopener noreferrer" class="stream-badge youtube" title="Watch on YouTube">
+            <svg viewBox="0 0 24 24" class="stream-icon"><path fill="currentColor" d="M21.582 6.186c-.23-.86-.908-1.538-1.768-1.768C18.254 4 12 4 12 4s-6.254 0-7.814.418c-.86.23-1.538.908-1.768 1.768C2 7.746 2 12 2 12s0 4.254.418 5.814c.23.86.908 1.538 1.768 1.768C5.746 20 12 20 12 20s6.254 0 7.814-.418c.861-.23 1.538-.908 1.768-1.768C22 16.254 22 12 22 12s0-4.254-.418-5.814zM10 15.464V8.536L16 12l-6 3.464z"/></svg>
+            <span>YouTube</span>
+        </a>
+        <a href="{amazon_music_url}" target="_blank" rel="noopener noreferrer" class="stream-badge amazon-music" title="Listen on Amazon Music">
+            <svg viewBox="0 0 24 24" class="stream-icon"><path fill="currentColor" d="M13.9 14.5c-1.8 0-3.3-1.1-3.3-3.2 0-2.3 1.8-3.3 3.7-3.3 1 0 1.9.2 2.4.5v1.1c-.5-.3-1.2-.5-2.1-.5-1.2 0-2.1.6-2.1 1.8 0 1.1.7 1.8 2 1.8.8 0 1.6-.3 2.2-.6v1.1c-.7.5-1.7.7-2.8.7zm-1.8 4.4c-4.4 0-8.2-2.4-9.9-5.9-.2-.3 0-.7.3-.8.3-.1.7 0 .8.3 1.5 3.1 4.9 5.2 8.8 5.2 3.1 0 5.9-1.3 7.8-3.4.2-.3.6-.3.8-.1.3.2.3.6.1.8-2.1 2.4-5.3 3.9-8.7 3.9zm9.7-3.8c-.3-.4-1.7-.2-2.4-.1-.2 0-.3-.2-.2-.3.8-.9 2.2-.6 2.5-.2.3.4-.1 1.7-.8 2.4-.2.1-.3 0-.3-.2.2-.7.9-1.2 1.2-1.6z"/></svg>
+            <span>Amazon Music</span>
+        </a>
+    </div>
 </div>
 '''
     # 2. INJECT PRESENTER VIEW BUTTON

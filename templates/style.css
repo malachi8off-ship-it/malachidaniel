@@ -419,9 +419,136 @@ body {
         margin: 0 auto;
     }
     
-    
     /* Overrides the inline left-align for mobile */
     .container > div[style*="text-align: left;"] {
         text-align: center !important; 
     }
+
+    /* 7. Streaming Hub Mobile Adjustments */
+    .streaming-hub {
+        padding: 14px 12px;
+        margin: 15px auto 20px auto;
+    }
+    
+    .stream-badge {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+        gap: 6px;
+    }
+}
+
+/* ========================================================
+   STREAMING PLATFORMS HUB (HYBRID STREAMING BAR)
+======================================================== */
+.streaming-hub {
+    margin: 20px auto 25px auto;
+    max-width: 650px;
+    padding: 18px 20px;
+    background: var(--bg-surface-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.streaming-hub-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+.streaming-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.stream-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.stream-badge .stream-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.stream-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.stream-badge:hover .stream-icon {
+    transform: scale(1.15);
+}
+
+/* Platform specific colors */
+.stream-badge.spotify .stream-icon { color: #1db954; }
+.stream-badge.spotify:hover {
+    background: rgba(29, 185, 84, 0.15);
+    border-color: #1db954;
+    color: #1db954;
+}
+
+.stream-badge.yt-music .stream-icon { color: #ff0000; }
+.stream-badge.yt-music:hover {
+    background: rgba(255, 0, 0, 0.15);
+    border-color: #ff0000;
+    color: #ff4444;
+}
+
+.stream-badge.apple-music .stream-icon { color: #fa2d48; }
+.stream-badge.apple-music:hover {
+    background: rgba(250, 45, 72, 0.15);
+    border-color: #fa2d48;
+    color: #fa2d48;
+}
+
+.stream-badge.youtube .stream-icon { color: #ff0000; }
+.stream-badge.youtube:hover {
+    background: rgba(255, 0, 0, 0.15);
+    border-color: #ff0000;
+    color: #ff4444;
+}
+
+.stream-badge.amazon-music .stream-icon { color: #25d1da; }
+.stream-badge.amazon-music:hover {
+    background: rgba(37, 209, 218, 0.15);
+    border-color: #25d1da;
+    color: #25d1da;
+}
+
+body.light-mode .streaming-hub {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .stream-badge {
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .stream-badge:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
