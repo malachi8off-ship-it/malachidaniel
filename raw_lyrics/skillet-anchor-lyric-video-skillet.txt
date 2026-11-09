@@ -3,7 +3,7 @@ Skillet
 meaning
 This song is a desperate plea for God to be the stabilizing force in the midst of life's violent storms and anxieties. It draws upon the biblical metaphor found in Hebrews 6:19, describing hope in God as a firm and secure anchor for the soul.
 apple_data
-NONE
+1750583656
 lyrics
 Driftin' beneath the horizon
 Body is weak but I'm tryin'
