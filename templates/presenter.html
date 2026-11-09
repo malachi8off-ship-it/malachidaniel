@@ -3,213 +3,844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presenter View - Malachi Daniel Hub</title>
+    <title>Live Worship Presenter | Malachi Daniel Hub</title>
+    
+    <!-- Google Fonts for Professional Projection -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600;700&family=Montserrat:wght@500;700;800&family=Noto+Sans+Devanagari:wght@500;700&family=Noto+Sans+Malayalam:wght@500;700&family=Outfit:wght@500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-color: #0a0a0a;
+            --bg-theme: radial-gradient(circle at center, #10192d 0%, #060911 100%);
             --text-color: #ffffff;
-            --font-size: 48px;
-            --font-family: 'Inter', system-ui, sans-serif;
+            --text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.8);
+            --font-size: 52px;
+            --font-family: 'Montserrat', 'Noto Sans Malayalam', 'Noto Sans Devanagari', sans-serif;
+            --line-height: 1.5;
             --text-align: center;
+            --accent-color: #38bdf8;
         }
-        
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
         body {
-            background-color: var(--bg-color);
+            background: var(--bg-theme);
+            background-size: cover;
+            background-position: center;
             color: var(--text-color);
             font-family: var(--font-family);
-            margin: 0;
-            padding: 40px;
             display: flex;
             flex-direction: column;
-            align-items: var(--text-align);
-            min-height: 100vh;
-            transition: all 0.3s ease;
-            overflow-x: hidden;
-        }
-
-        .title-block {
-            margin-bottom: 60px;
-            text-align: center;
-            width: 100%;
-        }
-
-        .title-block h1 {
-            font-size: 2em;
-            margin: 0;
-            color: #3498db;
-        }
-
-        .title-block h2 {
-            font-size: 1.2em;
-            opacity: 0.7;
-            margin: 10px 0 0 0;
-            font-weight: 400;
-        }
-
-        #lyrics-container {
-            font-size: var(--font-size);
-            line-height: 1.6;
-            white-space: pre-wrap;
-            max-width: 1400px;
-            width: 100%;
-            text-align: var(--text-align);
-            padding-bottom: 120px; /* Space for controls */
-        }
-
-        /* Glassmorphic Control Panel */
-        .controls {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px 30px;
-            border-radius: 50px;
-            display: flex;
-            gap: 25px;
+            justify-content: space-between;
             align-items: center;
-            opacity: 0; 
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            user-select: none;
+            transition: background 0.4s ease;
+        }
+
+        /* --- THEME VARIATIONS --- */
+        body.theme-midnight {
+            --bg-theme: radial-gradient(circle at center, #152238 0%, #080d16 100%);
+        }
+        body.theme-oled {
+            --bg-theme: #000000;
+        }
+        body.theme-gold {
+            --bg-theme: radial-gradient(circle at center, #2e1e0f 0%, #0f0a05 100%);
+        }
+        body.theme-damask {
+            --bg-theme: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)), url('/dark-bg.jpg');
+        }
+        body.theme-ambient-purple {
+            --bg-theme: radial-gradient(circle at center, #261230 0%, #0a040d 100%);
+        }
+        body.theme-lower-third {
+            --bg-theme: transparent;
+            background: transparent !important;
+        }
+
+        /* --- TOP HEADER (SONG META & LIVE CLOCK) --- */
+        .top-bar {
+            width: 100%;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            opacity: 0.85;
+            transition: opacity 0.3s ease;
+        }
+
+        .song-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .song-title-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--accent-color);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .song-artist-header {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .live-clock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- MAIN SLIDE STAGE --- */
+        .slide-stage {
+            flex: 1;
+            width: 100%;
+            max-width: 1500px;
+            padding: 0 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: var(--text-align);
+            position: relative;
+            z-index: 5;
+        }
+
+        body.theme-lower-third .slide-stage {
+            justify-content: flex-end;
+            padding-bottom: 70px;
+        }
+
+        .verse-badge {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.18);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #7dd3fc;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .verse-badge:empty {
+            display: none;
+        }
+
+        .slide-text {
+            font-size: var(--font-size);
+            line-height: var(--line-height);
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            white-space: pre-line;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            max-width: 100%;
+        }
+
+        body.theme-lower-third .slide-text {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            font-size: clamp(28px, 4vw, 42px);
+        }
+
+        /* Blackout State */
+        body.blackout .slide-stage, 
+        body.blackout .top-bar {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        /* --- BOTTOM WATERMARK & SLIDE INDICATOR --- */
+        .bottom-bar {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            opacity: 0.8;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .watermark {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            opacity: 0.75;
+        }
+
+        .watermark span {
+            color: var(--accent-color);
+        }
+
+        .slide-counter {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- FLOATING NAVIGATION ARROWS --- */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 2rem;
+            border-radius: 12px;
+        }
+
+        body.show-ui .nav-btn, .nav-btn:hover {
+            opacity: 0.6;
+        }
+
+        .nav-btn:hover {
+            opacity: 1 !important;
+            background: rgba(56, 189, 248, 0.25);
+            border-color: #38bdf8;
+        }
+
+        .nav-btn.prev { left: 20px; }
+        .nav-btn.next { right: 20px; }
+
+        /* --- PROGRESS BAR --- */
+        .progress-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
             z-index: 100;
         }
 
-        /* Fade in controls when mouse moves or on hover */
-        body.show-controls .controls, .controls:hover {
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- CONTROL DOCK (GLASSMORPHIC TOOLBAR) --- */
+        .control-dock {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        body.show-ui .control-dock, .control-dock:hover {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
         }
 
-        .control-group {
+        .dock-group {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: #ccc;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 500;
         }
 
-        select, input[type="range"] {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
+        .dock-group select, .dock-group input[type="range"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 8px;
             outline: none;
-            font-family: inherit;
             cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
         }
 
-        option { background: #111; }
+        .dock-group option {
+            background: #0f172a;
+            color: #fff;
+        }
 
-        .close-btn {
-            background: rgba(231, 76, 60, 0.2);
-            border: 1px solid rgba(231, 76, 60, 0.5);
-            color: #e74c3c;
-            text-decoration: none;
-            padding: 8px 18px;
+        .dock-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 14px;
             border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dock-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .dock-btn.active {
+            background: #e11d48;
+            border-color: #f43f5e;
+            color: white;
+        }
+
+        .close-dock-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
             font-weight: bold;
-            font-size: 0.9rem;
             transition: all 0.2s;
         }
 
-        .close-btn:hover {
-            background: #e74c3c;
+        .close-dock-btn:hover {
+            background: #ef4444;
             color: white;
+        }
+
+        /* --- SLIDE THUMBNAIL DRAWER --- */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .drawer-overlay.open {
+            display: flex;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .drawer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            padding-bottom: 40px;
+        }
+
+        .thumb-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .thumb-card:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            transform: scale(1.02);
+        }
+
+        .thumb-card.active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .thumb-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-transform: uppercase;
+        }
+
+        .thumb-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            white-space: pre-line;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .slide-stage { padding: 0 20px; }
+            :root { --font-size: 32px; }
+            .control-dock { flex-wrap: wrap; border-radius: 20px; max-width: 95%; }
+            .top-bar, .bottom-bar { padding: 15px 20px; }
         }
     </style>
 </head>
-<body>
+<body class="theme-midnight show-ui">
 
-    <div class="title-block">
-        <h1 id="song-title">Loading Presenter...</h1>
-        <h2 id="song-artist"></h2>
+    <!-- Slide Progress Bar -->
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar"></div>
     </div>
 
-    <div id="lyrics-container"></div>
+    <!-- Top Status Bar -->
+    <header class="top-bar">
+        <div class="song-info">
+            <h1 class="song-title-header" id="song-title">Loading Song...</h1>
+            <h2 class="song-artist-header" id="song-artist"></h2>
+        </div>
+        <div class="live-clock-badge" id="live-clock" title="Current Service Time">12:00:00 PM</div>
+    </header>
 
-    <div class="controls">
-        <div class="control-group">
+    <!-- Main Live Slide Stage -->
+    <main class="slide-stage" id="slide-stage">
+        <span class="verse-badge" id="verse-badge"></span>
+        <div class="slide-text" id="slide-text"></div>
+    </main>
+
+    <!-- Bottom Watermark & Counter -->
+    <footer class="bottom-bar">
+        <div class="watermark">
+            <span>✝</span> Christian LyricsHub • <span>malachidaniel.com</span>
+        </div>
+        <div class="slide-counter" id="slide-counter">Slide 1 / 1</div>
+    </footer>
+
+    <!-- Floating Navigation Arrows -->
+    <button class="nav-btn prev" id="prev-btn" title="Previous Slide (← or PageUp)">‹</button>
+    <button class="nav-btn next" id="next-btn" title="Next Slide (→, Space, or PageDown)">›</button>
+
+    <!-- Slide Overview Drawer Modal -->
+    <div class="drawer-overlay" id="drawer-overlay">
+        <div class="drawer-header">
+            <h2>📜 Slide Grid Overview (Press Esc to Close)</h2>
+            <button class="dock-btn" onclick="toggleDrawer()">✕ Close Grid</button>
+        </div>
+        <div class="drawer-grid" id="drawer-grid"></div>
+    </div>
+
+    <!-- Control Dock (Auto-hides when mouse is idle) -->
+    <nav class="control-dock">
+        <!-- Font Family -->
+        <div class="dock-group">
             <label>Font:</label>
-            <select id="font-family">
-                <option value="'Inter', system-ui, sans-serif">Sans-Serif (Modern)</option>
-                <option value="'Georgia', serif">Serif (Classic)</option>
-                <option value="'Courier New', monospace">Monospace (Typewriter)</option>
+            <select id="select-font">
+                <option value="'Montserrat', sans-serif">Montserrat (Bold Modern)</option>
+                <option value="'Inter', sans-serif">Inter (Clean Crisp)</option>
+                <option value="'Cinzel', serif">Cinzel (Majestic Hymnal)</option>
+                <option value="'Playfair Display', serif">Playfair (Classic Worship)</option>
+                <option value="'Outfit', sans-serif">Outfit (Contemporary)</option>
+                <option value="'Noto Sans Malayalam', sans-serif">Malayalam Script</option>
+                <option value="'Noto Sans Devanagari', sans-serif">Hindi / Devanagari</option>
             </select>
         </div>
-        
-        <div class="control-group">
+
+        <!-- Font Size Slider -->
+        <div class="dock-group">
             <label>Size:</label>
-            <input type="range" id="font-size" min="20" max="100" value="48">
+            <input type="range" id="slider-size" min="28" max="92" value="52">
         </div>
-        
-        <div class="control-group">
-            <label>Align:</label>
-            <select id="text-align">
-                <option value="center">Center</option>
-                <option value="flex-start">Left</option>
+
+        <!-- Background Themes -->
+        <div class="dock-group">
+            <label>Theme:</label>
+            <select id="select-theme">
+                <option value="theme-midnight">🌌 Deep Midnight</option>
+                <option value="theme-oled">⚫ Pure Black (OLED)</option>
+                <option value="theme-gold">✨ Holy Gold Haze</option>
+                <option value="theme-damask">✝ Church Damask</option>
+                <option value="theme-ambient-purple">💜 Deep Worship Purple</option>
+                <option value="theme-lower-third">📺 OBS / Lower-Third</option>
             </select>
         </div>
-        
-        <a href="#" class="close-btn" onclick="window.close(); return false;">✕ Close</a>
-    </div>
+
+        <!-- Blackout Toggle (ProPresenter Style) -->
+        <button class="dock-btn" id="btn-blackout" title="Toggle Blackout (Press B)">
+            <span>👁️</span> Blank (B)
+        </button>
+
+        <!-- Slide Overview Grid -->
+        <button class="dock-btn" onclick="toggleDrawer()" title="All Slides Overview (Press G)">
+            <span>📑</span> Grid (G)
+        </button>
+
+        <!-- Fullscreen Toggle -->
+        <button class="dock-btn" id="btn-fullscreen" title="Toggle Fullscreen (Press F)">
+            <span>⛶</span> Fullscreen
+        </button>
+
+        <!-- Exit -->
+        <a href="#" class="close-dock-btn" onclick="window.close(); return false;">✕ Close</a>
+    </nav>
 
     <script>
-        // 1. Get the requested song from the URL
+        let slides = [];
+        let currentIndex = 0;
+        let isBlackout = false;
+
+        // --- 1. CLOCK UPDATE ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('live-clock').innerText = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 2. SMART SLIDE PARSER ---
+        function parseLyricsIntoSlides(rawLyrics) {
+            if (!rawLyrics) return [];
+
+            // Replace HTML break tags with standard newline
+            const cleanText = rawLyrics
+                .replace(/<br\s*[\/]?>/gi, '\n')
+                .replace(/&nbsp;/g, ' ')
+                .trim();
+
+            // Split into verse blocks by double linebreaks
+            const rawBlocks = cleanText.split(/\n\s*\n+/);
+            const generatedSlides = [];
+
+            rawBlocks.forEach((block) => {
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length === 0) return;
+
+                // Detect verse/chorus header tags: [Verse 1], Chorus, 1., etc.
+                let headerTag = "";
+                const firstLine = lines[0];
+                const tagMatch = firstLine.match(/^(\[.*?\]|Verse\s*\d+|Chorus\s*\d*|Bridge|Pre-Chorus|Outro|Intro|\d+\.)/i);
+                
+                if (tagMatch) {
+                    headerTag = tagMatch[1];
+                    // If first line was solely the tag, pop it
+                    if (firstLine.trim().toLowerCase() === tagMatch[1].trim().toLowerCase()) {
+                        lines.shift();
+                    }
+                }
+
+                // Split long stanzas into 4-line chunks for optimal reading focus
+                const MAX_LINES = 4;
+                if (lines.length <= 5) {
+                    generatedSlides.push({
+                        tag: headerTag,
+                        text: lines.join('\n')
+                    });
+                } else {
+                    for (let i = 0; i < lines.length; i += MAX_LINES) {
+                        const chunk = lines.slice(i, i + MAX_LINES);
+                        const partNum = Math.floor(i / MAX_LINES) + 1;
+                        const subTag = headerTag ? `${headerTag} (${partNum})` : "";
+                        generatedSlides.push({
+                            tag: subTag,
+                            text: chunk.join('\n')
+                        });
+                    }
+                }
+            });
+
+            return generatedSlides.length > 0 ? generatedSlides : [{ tag: "", text: cleanText }];
+        }
+
+        // --- 3. RENDER CURRENT SLIDE ---
+        function renderSlide(index) {
+            if (slides.length === 0) return;
+            if (index < 0) index = 0;
+            if (index >= slides.length) index = slides.length - 1;
+            currentIndex = index;
+
+            const slide = slides[currentIndex];
+            const slideText = document.getElementById('slide-text');
+            const verseBadge = document.getElementById('verse-badge');
+            const counter = document.getElementById('slide-counter');
+            const progress = document.getElementById('progress-bar');
+
+            // Cross-fade animation
+            slideText.style.opacity = '0';
+            slideText.style.transform = 'translateY(6px)';
+
+            setTimeout(() => {
+                verseBadge.innerText = slide.tag || "";
+                slideText.innerText = slide.text;
+                slideText.style.opacity = '1';
+                slideText.style.transform = 'translateY(0)';
+            }, 100);
+
+            counter.innerText = `Slide ${currentIndex + 1} / ${slides.length}`;
+            const pct = ((currentIndex + 1) / slides.length) * 100;
+            progress.style.width = `${pct}%`;
+
+            updateDrawerActive();
+        }
+
+        function nextSlide() {
+            if (currentIndex < slides.length - 1) {
+                renderSlide(currentIndex + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                renderSlide(currentIndex - 1);
+            }
+        }
+
+        // --- 4. LOAD SONG DATA ---
         const urlParams = new URLSearchParams(window.location.search);
         const songId = urlParams.get('song');
 
         if (!songId) {
-            document.getElementById('song-title').innerText = "Error: No song selected.";
+            document.getElementById('song-title').innerText = "No song selected.";
+            document.getElementById('slide-text').innerText = "Please open Presenter View from a song page.";
         } else {
-            // 2. Fetch the JSON database our Python script generated
             fetch('lyrics_api.json')
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     const song = data.find(s => s.id === songId);
                     if (song) {
                         document.getElementById('song-title').innerText = song.title;
-                        document.getElementById('song-artist').innerText = song.author;
-                        document.getElementById('lyrics-container').innerHTML = song.lyrics;
+                        document.getElementById('song-artist').innerText = song.author || "Worship";
+                        document.title = `${song.title} - Presenter View`;
+
+                        slides = parseLyricsIntoSlides(song.lyrics);
+                        buildDrawerGrid();
+                        renderSlide(0);
                     } else {
-                        document.getElementById('song-title').innerText = "Song not found in database.";
+                        document.getElementById('song-title').innerText = "Song not found in library.";
                     }
                 })
                 .catch(err => {
-                    document.getElementById('song-title').innerText = "Failed to load lyrics API.";
+                    document.getElementById('song-title').innerText = "Error loading library data.";
                     console.error(err);
                 });
         }
 
-        // 3. Live Typography Controls
+        // --- 5. KEYBOARD SHORTCUTS ---
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+            switch(e.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                case ' ':
+                case 'PageDown':
+                case 'Enter':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                case 'Backspace':
+                case 'PageUp':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    renderSlide(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    renderSlide(slides.length - 1);
+                    break;
+                case 'b':
+                case 'B':
+                    toggleBlackout();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+                case 'g':
+                case 'G':
+                    toggleDrawer();
+                    break;
+                case 'Escape':
+                    closeDrawer();
+                    break;
+            }
+        });
+
+        // Click on screen sides to navigate
+        document.getElementById('prev-btn').addEventListener('click', prevSlide);
+        document.getElementById('next-btn').addEventListener('click', nextSlide);
+
+        // --- 6. BLACKOUT MODE ---
+        function toggleBlackout() {
+            isBlackout = !isBlackout;
+            document.body.classList.toggle('blackout', isBlackout);
+            document.getElementById('btn-blackout').classList.toggle('active', isBlackout);
+        }
+        document.getElementById('btn-blackout').addEventListener('click', toggleBlackout);
+
+        // --- 7. FULLSCREEN ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+        document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
+
+        // --- 8. LIVE CONTROLS (FONT, SIZE, THEME) ---
         const root = document.documentElement;
 
-        document.getElementById('font-family').addEventListener('change', (e) => {
+        document.getElementById('select-font').addEventListener('change', (e) => {
             root.style.setProperty('--font-family', e.target.value);
+            localStorage.setItem('presenter_font', e.target.value);
         });
 
-        document.getElementById('font-size').addEventListener('input', (e) => {
+        document.getElementById('slider-size').addEventListener('input', (e) => {
             root.style.setProperty('--font-size', e.target.value + 'px');
+            localStorage.setItem('presenter_size', e.target.value);
         });
 
-        document.getElementById('text-align').addEventListener('change', (e) => {
-            root.style.setProperty('--text-align', e.target.value);
-            // Flexbox needs flex-start to align left globally, but text needs 'left'
-            document.getElementById('lyrics-container').style.textAlign = e.target.value === 'flex-start' ? 'left' : 'center';
+        document.getElementById('select-theme').addEventListener('change', (e) => {
+            document.body.className = `${e.target.value} ${isBlackout ? 'blackout' : ''}`;
+            localStorage.setItem('presenter_theme', e.target.value);
         });
 
-        // 4. Hide controls when the mouse is inactive for 2.5 seconds
-        let timeout;
+        // Restore saved preferences
+        if (localStorage.getItem('presenter_font')) {
+            const font = localStorage.getItem('presenter_font');
+            document.getElementById('select-font').value = font;
+            root.style.setProperty('--font-family', font);
+        }
+        if (localStorage.getItem('presenter_size')) {
+            const size = localStorage.getItem('presenter_size');
+            document.getElementById('slider-size').value = size;
+            root.style.setProperty('--font-size', size + 'px');
+        }
+        if (localStorage.getItem('presenter_theme')) {
+            const theme = localStorage.getItem('presenter_theme');
+            document.getElementById('select-theme').value = theme;
+            document.body.className = theme;
+        }
+
+        // --- 9. AUTO-HIDE DOCK WHEN MOUSE IS IDLE ---
+        let idleTimeout;
         document.addEventListener('mousemove', () => {
-            document.body.classList.add('show-controls');
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                document.body.classList.remove('show-controls');
+            document.body.classList.add('show-ui');
+            clearTimeout(idleTimeout);
+            idleTimeout = setTimeout(() => {
+                document.body.classList.remove('show-ui');
             }, 2500);
         });
+
+        // --- 10. SLIDE OVERVIEW GRID DRAWER ---
+        function buildDrawerGrid() {
+            const grid = document.getElementById('drawer-grid');
+            grid.innerHTML = '';
+            slides.forEach((slide, idx) => {
+                const card = document.createElement('div');
+                card.className = `thumb-card ${idx === currentIndex ? 'active' : ''}`;
+                card.id = `thumb-${idx}`;
+                card.innerHTML = `
+                    <div class="thumb-badge">${slide.tag || `Slide ${idx + 1}`}</div>
+                    <div class="thumb-text">${slide.text}</div>
+                `;
+                card.addEventListener('click', () => {
+                    renderSlide(idx);
+                    closeDrawer();
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        function updateDrawerActive() {
+            document.querySelectorAll('.thumb-card').forEach((c, i) => {
+                c.classList.toggle('active', i === currentIndex);
+            });
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer-overlay');
+            drawer.classList.toggle('open');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer-overlay').classList.remove('open');
+        }
     </script>
 </body>
 </html>
