@@ -1,6 +1,18 @@
 import os
+import sys
 import json
 import subprocess
+
+if sys.stdout:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if sys.stderr:
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 DIR_PATH = "raw_lyrics"
 pending_songs = []
@@ -16,7 +28,12 @@ for filename in os.listdir(DIR_PATH):
         lines = f.readlines()
         
     # Check if the file is long enough and if line 3 is already "meaning"
-    if len(lines) >= 3 and lines[2].strip().lower() == "meaning":
+    # Also check if line 4 (the actual meaning content) is not empty
+    has_meaning = False
+    if len(lines) >= 4 and lines[2].strip().lower() == "meaning" and lines[3].strip() != "":
+        has_meaning = True
+
+    if has_meaning:
         continue 
         
     # If it doesn't have a meaning, grab the title and artist

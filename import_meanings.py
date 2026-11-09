@@ -5,6 +5,17 @@ import time
 import requests
 import urllib.parse
 
+if sys.stdout:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if sys.stderr:
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 DIR_PATH = "raw_lyrics"
 JSON_FILE = "completed_meanings.json"
 
@@ -70,17 +81,26 @@ for item in meanings_data:
     with open(filepath, "r", encoding="utf-8") as f:
         lines = f.readlines()
         
-    # Check if meaning already exists to prevent double processing
-    if len(lines) >= 3 and lines[2].strip().lower() == "meaning":
+    # Check if meaning already exists and is non-empty to prevent double processing
+    if len(lines) >= 4 and lines[2].strip().lower() == "meaning" and lines[3].strip() != "":
         print(f"⏭️ Skipping {filename} - already processed.")
         continue
         
     title = lines[0].strip()
     artist = lines[1].strip()
 
-    # 1. Fetch Apple Music Data
-    print(f"🎵 Fetching Apple Music ID for '{title}'...")
-    track_id = search_apple_music(title, artist)
+    # 1. Fetch Apple Music Data (or keep existing ID if present)
+    existing_apple_id = "NONE"
+    for i, line in enumerate(lines):
+        if line.strip().lower() == "apple_data" and i + 1 < len(lines):
+            existing_apple_id = lines[i + 1].strip()
+            break
+            
+    if existing_apple_id and existing_apple_id.upper() != "NONE":
+        track_id = existing_apple_id
+    else:
+        print(f"🎵 Fetching Apple Music ID for '{title}'...")
+        track_id = search_apple_music(title, artist)
         
     # 2. Rebuild file with injected meaning and Apple data
     new_content = [
