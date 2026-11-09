@@ -3,7 +3,7 @@ MercyMe
 meaning
 This poignant song declares unwavering trust in God's goodness, even when He doesn't remove the painful circumstances. It is directly inspired by the faith of Shadrach, Meshach, and Abednego in Daniel 3, who declared God can save them, but 'even if He does not,' they will not bow.
 apple_data
-NONE
+1545538398
 lyrics
 They say sometimes you win some
 Sometimes you lose some

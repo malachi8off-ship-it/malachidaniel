@@ -3,7 +3,7 @@ Bridge Music
 meaning
 Sung in Hindi, this powerful anthem declares Jesus as the unshakable rock and foundation in the midst of life's storms. It is based directly on Jesus' parable of the wise builder in Matthew 7 who built his house on the rock.
 apple_data
-NONE
+1548087190
 lyrics
 Bhawar ke beech me, Tu kehta hai tham ja
 Tu meri taakat hai, Tu hi mera imaan

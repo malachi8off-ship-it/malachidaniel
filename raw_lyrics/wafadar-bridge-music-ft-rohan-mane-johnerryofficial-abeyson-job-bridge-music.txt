@@ -3,7 +3,7 @@ Bridge Music
 meaning
 Sung in Hindi, this worship track celebrates the steadfast, loyal nature of God's character toward His people. It echoes the repeated Old Testament declarations that the Lord's steadfast love and faithfulness endure forever.
 apple_data
-NONE
+1602095116
 lyrics
 Vishwasyogya Parmeshwar hai Tu
 Dekha hai meine apne jeevan mein

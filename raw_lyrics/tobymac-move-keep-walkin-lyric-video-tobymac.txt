@@ -3,7 +3,7 @@ TobyMac
 meaning
 This song is an encouragement to keep pressing forward in faith despite obstacles, weariness, and a broken world. It aligns with the Apostle Paul's encouragement in Philippians 3 to press on toward the goal to win the prize for which God has called us.
 apple_data
-NONE
+1440845056
 lyrics
 Another heartbreak day
 Feels like you're miles away

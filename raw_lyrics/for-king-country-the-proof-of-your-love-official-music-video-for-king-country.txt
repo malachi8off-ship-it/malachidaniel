@@ -3,7 +3,7 @@ for KING   COUNTRY
 meaning
 This dramatic track declares that all human actions and eloquence are meaningless without genuine, sacrificial love. It is a direct musical adaptation of the Apostle Paul's discourse on love in 1 Corinthians 13.
 apple_data
-NONE
+1163435938
 lyrics
 If I sing, but don't have love
 I waste my breath with every song

@@ -3,7 +3,7 @@ TobyMac
 meaning
 This track encourages listeners to use their words to uplift, heal, and encourage others rather than tear them down. It is based directly on Proverbs 18:21, which states that the tongue has the power of life and death.
 apple_data
-NONE
+720105409
 lyrics
 Some days, life feels perfect
 Other days, it just ain't workin'

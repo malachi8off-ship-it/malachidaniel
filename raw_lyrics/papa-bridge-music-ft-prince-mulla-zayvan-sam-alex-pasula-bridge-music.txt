@@ -3,7 +3,7 @@ Bridge Music
 meaning
 Sung in Hinglish, this intimate song expresses the deep, familial love a believer has for God as a perfect Father. It draws directly on the biblical concept found in Romans 8, where the Spirit allows us to cry out, 'Abba, Father.'
 apple_data
-NONE
+1572694674
 lyrics
 Tujhe chhod mein chal pada
 Dhundne ghar har jagah

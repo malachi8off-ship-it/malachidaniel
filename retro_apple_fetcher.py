@@ -1,24 +1,100 @@
 import os
+import sys
+import re
 import requests
 import urllib.parse
 import time
 
+if sys.stdout:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if sys.stderr:
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 DIR_PATH = "raw_lyrics"
 
-def search_apple_music(title, artist):
-    query = urllib.parse.quote(f"{title} {artist}")
+def clean_title(title, artist=""):
+    cleaned = title
+
+    # Remove pipe sections like "| Bridge Music ft...", "| COVER", "| Official..."
+    cleaned = re.sub(r'\|.*$', '', cleaned)
+
+    # If title has "Artist - Song Title", extract just the song title
+    if " - " in cleaned:
+        parts = cleaned.split(" - ", 1)
+        cleaned = parts[1]
+
+    # Remove parenthetical / bracketed video clutter
+    patterns_to_remove = [
+        r'\((official|video|audio|lyric|visualizer|music video|lyric video|official audio|official video|cover|remix|hd|4k)[^)]*\)',
+        r'\[(official|video|audio|lyric|visualizer|music video|lyric video|official audio|official video|cover|remix|hd|4k)[^\]]*\]',
+        r'\(feat\.[^)]*\)',
+        r'\[feat\.[^\]]*\]',
+    ]
+    for pattern in patterns_to_remove:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+
+    # Specific common typos
+    cleaned = re.sub(r'\bparyed\b', 'prayed', cleaned, flags=re.IGNORECASE)
+
+    # Strip quotes, dashes, extra whitespace
+    cleaned = cleaned.replace('"', '').replace('“', '').replace('”', '').replace("’", "'").strip(" -_")
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    return cleaned
+
+def clean_artist(artist):
+    if not artist:
+        return ""
+    cleaned = re.sub(r'\|.*$', '', artist)
+    cleaned = re.sub(r'ft\..*$', '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'@\w+', '', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
+def query_itunes(term):
+    query = urllib.parse.quote(term.strip())
     url = f"https://itunes.apple.com/search?term={query}&entity=song&limit=1"
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=6)
         data = response.json()
         if data.get('resultCount', 0) > 0:
-            return str(data['results'][0]['trackId'])
+            track = data['results'][0]
+            return str(track['trackId']), track.get('trackName', ''), track.get('artistName', '')
     except Exception as e:
-        print(f"  -> Apple Music Search Error: {e}")
-    return "NONE"
+        pass
+    return None, None, None
+
+def search_apple_music(title, artist):
+    c_title = clean_title(title, artist)
+    c_artist = clean_artist(artist)
+
+    candidates = []
+    if c_title and c_artist:
+        candidates.append(f"{c_title} {c_artist}")
+    if c_title:
+        candidates.append(c_title)
+    if title and artist:
+        candidates.append(f"{title} {artist}")
+
+    seen = set()
+    for q in candidates:
+        if q in seen:
+            continue
+        seen.add(q)
+        track_id, track_name, artist_name = query_itunes(q)
+        if track_id:
+            return track_id, track_name, artist_name
+
+    return "NONE", None, None
 
 print("========================================")
-print("     RETRO APPLE MUSIC ID FETCHER       ")
+print("  RETRO APPLE MUSIC ID FETCHER (SMART)  ")
 print("========================================")
 print("🔍 Scanning raw_lyrics for missing or 'NONE' Apple Music IDs...")
 
@@ -58,15 +134,15 @@ for filename in os.listdir(DIR_PATH):
                 # It already has a valid ID, skip this file
                 continue
             else:
-                # It has "NONE" or is blank. Let's try to fetch again.
-                print(f"🔄 Re-fetching Apple Music ID for '{title}' by '{artist}'...")
-                track_id = search_apple_music(title, artist)
+                # It has "NONE" or is blank. Let's try to fetch again with smart search.
+                print(f"🔄 Smart searching for: '{title}' by '{artist}'...")
+                track_id, t_name, a_name = search_apple_music(title, artist)
                 
                 if track_id != "NONE":
                     lines[apple_idx + 1] = f"{track_id}\n"
                     with open(filepath, "w", encoding="utf-8") as f:
                         f.writelines(lines)
-                    print(f"  ✅ Updated {filename} (New Track ID: {track_id})")
+                    print(f"  ✅ Matched '{t_name}' by '{a_name}' (ID: {track_id}) -> {filename}")
                     updated_count += 1
                 else:
                     print(f"  ❌ Still no ID found for {filename}.")
@@ -74,9 +150,9 @@ for filename in os.listdir(DIR_PATH):
                 time.sleep(1) # Be nice to Apple API
                 continue 
     else:
-        # Original logic: completely missing the apple_data tag
+        # Completely missing the apple_data tag
         print(f"🎵 Fetching Apple Music ID for '{title}' by '{artist}'...")
-        track_id = search_apple_music(title, artist)
+        track_id, t_name, a_name = search_apple_music(title, artist)
         
         # Locate insertion point
         lyrics_idx = -1
@@ -92,17 +168,13 @@ for filename in os.listdir(DIR_PATH):
         new_content = []
         
         if lyrics_idx != -1:
-            # We found the lyrics tag, insert just before it
             new_content = lines[:lyrics_idx]
             new_content.extend(["apple_data\n", f"{track_id}\n"])
             new_content.extend(lines[lyrics_idx:])
         else:
-            # No lyrics tag found
             if meaning_idx != -1:
-                # Insert after meaning block (which is meaning tag + 1 line of text)
                 insert_pos = meaning_idx + 2
             else:
-                # No meaning either, insert after artist
                 insert_pos = 2
                 
             new_content = lines[:insert_pos]
@@ -112,7 +184,10 @@ for filename in os.listdir(DIR_PATH):
         with open(filepath, "w", encoding="utf-8") as f:
             f.writelines(new_content)
             
-        print(f"  ✅ Added to {filename} (Track ID: {track_id})")
+        if track_id != "NONE":
+            print(f"  ✅ Matched '{t_name}' by '{a_name}' (ID: {track_id}) -> {filename}")
+        else:
+            print(f"  ⚠️ Added apple_data tag (NONE) to {filename}")
         updated_count += 1
         time.sleep(1) 
 
