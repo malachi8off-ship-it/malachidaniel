@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holy Bible | Christian LyricsHub</title>
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --bible-font-size: 1.18rem;
+            --bible-font-family: 'Lora', 'Noto Sans Malayalam', 'Noto Sans Devanagari', Georgia, serif;
+        }
+
+        .bible-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Glass Toolbar */
+        .bible-toolbar {
+            background: var(--bg-surface-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .bible-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .bible-select:hover {
+            border-color: #38bdf8;
+        }
+
+        .bible-select option {
+            background: #111827;
+            color: #fff;
+        }
+
+        .btn-bible {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-bible:hover {
+            background: #38bdf8;
+            color: #000;
+            transform: translateY(-1px);
+        }
+
+        .btn-present {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        .btn-present:hover {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        /* Chapter Header */
+        .chapter-header {
+            text-align: center;
+            margin: 25px 0 35px;
+        }
+
+        .chapter-title {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--header-title);
+            margin-bottom: 6px;
+            font-family: 'Cinzel', serif;
+        }
+
+        .chapter-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Verse Layout */
+        .scripture-wrapper {
+            background: var(--bg-surface-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .verses-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .verses-grid.parallel-mode {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .verse-item {
+            font-family: var(--bible-font-family);
+            font-size: var(--bible-font-size);
+            line-height: 1.75;
+            color: var(--text-primary);
+            position: relative;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .verse-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .verse-num {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-right: 8px;
+            vertical-align: super;
+            user-select: none;
+        }
+
+        .verse-actions {
+            display: inline-flex;
+            gap: 6px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            vertical-align: middle;
+        }
+
+        .verse-item:hover .verse-actions {
+            opacity: 1;
+        }
+
+        .action-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-family: var(--ui-font);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .action-chip:hover {
+            background: #38bdf8;
+            color: #000;
+            border-color: #38bdf8;
+        }
+
+        /* Chapter Navigation Buttons */
+        .chapter-nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        /* Modal Dialog for Book Picker */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .book-picker-card {
+            background: #0f172a;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .picker-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .testament-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 15px 30px 0;
+        }
+
+        .testament-tab {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .testament-tab.active {
+            background: #38bdf8;
+            color: #000;
+        }
+
+        .picker-body {
+            padding: 25px 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .book-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .book-chip:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .book-chip-en {
+            font-weight: 700;
+            color: #f8fafc;
+            font-size: 0.95rem;
+        }
+
+        .book-chip-sub {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* Chapter Pills */
+        .chapter-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chapter-pill {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #f8fafc;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chapter-pill:hover, .chapter-pill.active {
+            background: #38bdf8;
+            color: #000;
+            border-color: #38bdf8;
+        }
+
+        @media (max-width: 768px) {
+            .scripture-wrapper { padding: 20px; }
+            .chapter-title { font-size: 1.8rem; }
+            .verses-grid.parallel-mode { grid-template-columns: 1fr; }
+            .bible-toolbar { padding: 12px; }
+            .verse-actions { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <!-- Navbar -->
+    <nav class="navbar" style="position: relative;">
+        <a href="index.html" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #4da6ff; text-decoration: none; font-family: var(--ui-font); font-size: 15px; font-weight: bold; display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; z-index: 10;">
+            ← Back to Hub
+        </a>
+        <div class="nav-content">
+            <a href="/" class="logo"><span style="color: #ffffff;">Christian</span> LyricsHub</a>
+            <div class="nav-links">
+                <button id="darkModeToggle" class="btn-icon" aria-label="Toggle Dark Mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="bible-container">
+        <!-- Interactive Bible Controls -->
+        <div class="bible-toolbar">
+            <div class="toolbar-group">
+                <!-- Book Picker Trigger -->
+                <button class="btn-bible" id="btn-open-picker">
+                    📖 <span id="current-book-name">Genesis</span>
+                </button>
+
+                <!-- Chapter Selector Dropdown -->
+                <select class="bible-select" id="select-chapter"></select>
+
+                <!-- Primary Translation -->
+                <select class="bible-select" id="select-translation" title="Select Bible Translation">
+                    <option value="WEB">🇬🇧 WEB (Modern English)</option>
+                    <option value="KJV">🇬🇧 KJV (King James)</option>
+                    <option value="MOV">🇮🇳 Malayalam (സത്യവേദപുസ്തകം)</option>
+                    <option value="HIOV">🇮🇳 Hindi (पवित्र बाइबिल)</option>
+                    <option value="ESV">🇬🇧 ESV (English Standard)</option>
+                    <option value="NIV">🇬🇧 NIV (New International)</option>
+                </select>
+            </div>
+
+            <div class="toolbar-group">
+                <!-- Parallel Mode Toggle -->
+                <button class="btn-bible" id="btn-toggle-parallel" title="Read two translations side-by-side">
+                    ⚖️ Parallel Mode: <span id="parallel-status">OFF</span>
+                </button>
+                <select class="bible-select" id="select-secondary-trans" style="display: none;">
+                    <option value="MOV">🇮🇳 Malayalam</option>
+                    <option value="WEB">🇬🇧 WEB</option>
+                    <option value="KJV">🇬🇧 KJV</option>
+                    <option value="HIOV">🇮🇳 Hindi</option>
+                </select>
+
+                <!-- Present Chapter to Screen Button -->
+                <button class="btn-bible btn-present" id="btn-present-chapter" title="Project this entire chapter in Church Presenter View">
+                    📺 Present Chapter
+                </button>
+            </div>
+        </div>
+
+        <!-- Chapter Title -->
+        <header class="chapter-header">
+            <h1 class="chapter-title" id="display-title">Genesis 1</h1>
+            <p class="chapter-subtitle" id="display-subtitle">World English Bible</p>
+        </header>
+
+        <!-- Scripture Content Box -->
+        <article class="scripture-wrapper">
+            <div class="verses-grid" id="verses-container">
+                <p style="text-align: center; color: var(--text-muted);">⏳ Loading scripture...</p>
+            </div>
+
+            <!-- Chapter Prev / Next Navigation -->
+            <div class="chapter-nav-row">
+                <button class="btn-bible" id="btn-prev-chapter">← Previous Chapter</button>
+                <button class="btn-bible" id="btn-next-chapter">Next Chapter →</button>
+            </div>
+        </article>
+    </main>
+
+    <!-- Book & Chapter Picker Modal Drawer -->
+    <div class="modal-overlay" id="modal-picker">
+        <div class="book-picker-card">
+            <div class="picker-header">
+                <h2>📖 Select a Book & Chapter</h2>
+                <button class="btn-bible" onclick="closeBookPicker()">✕ Close</button>
+            </div>
+
+            <div class="testament-tabs">
+                <button class="testament-tab active" id="tab-ot" onclick="switchTestament('OT')">Old Testament (39)</button>
+                <button class="testament-tab" id="tab-nt" onclick="switchTestament('NT')">New Testament (27)</button>
+            </div>
+
+            <div class="picker-body">
+                <div id="step-books">
+                    <div class="books-grid" id="books-grid"></div>
+                </div>
+                <div id="step-chapters" style="display: none;">
+                    <button class="btn-bible" onclick="backToBooks()" style="margin-bottom: 15px;">← Back to Books</button>
+                    <h3 id="picked-book-title" style="margin-bottom: 10px;">Genesis</h3>
+                    <div class="chapter-pills-container" id="chapter-pills"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embedded Canon Data -->
+    <script src="bible_books_data.json" type="application/json" id="books-json"></script>
+
+    <script>
+        // State
+        let currentBookId = 1;
+        let currentChapter = 1;
+        let primaryTrans = 'WEB';
+        let secondaryTrans = 'MOV';
+        let isParallel = false;
+        let booksData = [];
+
+        // 1. Fetch Canon Books Mapping
+        fetch('bible_books_data.json')
+            .then(res => res.json())
+            .then(data => {
+                booksData = data;
+                initApp();
+            })
+            .catch(() => {
+                console.error("Could not load books data");
+            });
+
+        function initApp() {
+            // Check URL parameters (e.g. ?book=43&chapter=3&trans=WEB)
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('book')) currentBookId = parseInt(params.get('book')) || 1;
+            if (params.has('chapter')) currentChapter = parseInt(params.get('chapter')) || 1;
+            if (params.has('trans')) primaryTrans = params.get('trans');
+
+            document.getElementById('select-translation').value = primaryTrans;
+            populateChapterDropdown();
+            loadChapter();
+            renderBooksGrid('OT');
+        }
+
+        // 2. Load Scripture from Bolls Life API
+        async function loadChapter() {
+            const container = document.getElementById('verses-container');
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 40px 0;">⏳ Loading scripture...</p>';
+
+            const currentBook = booksData.find(b => b.id === currentBookId) || { name: 'Genesis', chapters: 50 };
+            document.getElementById('current-book-name').innerText = currentBook.name;
+            document.getElementById('display-title').innerText = `${currentBook.name} ${currentChapter}`;
+            document.getElementById('display-subtitle').innerText = getTranslationName(primaryTrans);
+
+            try {
+                const primaryUrl = `https://bolls.life/get-chapter/${primaryTrans}/${currentBookId}/${currentChapter}/`;
+                const primaryPromise = fetch(primaryUrl).then(r => r.json());
+
+                let secondaryPromise = null;
+                if (isParallel) {
+                    const secondaryUrl = `https://bolls.life/get-chapter/${secondaryTrans}/${currentBookId}/${currentChapter}/`;
+                    secondaryPromise = fetch(secondaryUrl).then(r => r.json());
+                }
+
+                const [primaryVerses, secondaryVerses] = await Promise.all([
+                    primaryPromise,
+                    secondaryPromise ? secondaryPromise : Promise.resolve(null)
+                ]);
+
+                renderVerses(primaryVerses, secondaryVerses, currentBook.name);
+
+            } catch (err) {
+                container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px 0;">❌ Failed to load chapter. Please check your internet connection.</p>';
+            }
+        }
+
+        // 3. Render Verses
+        function renderVerses(primaryList, secondaryList, bookName) {
+            const container = document.getElementById('verses-container');
+            container.innerHTML = '';
+
+            if (isParallel && secondaryList) {
+                container.className = 'verses-grid parallel-mode';
+                primaryList.forEach((v, i) => {
+                    const secVerse = secondaryList[i] || { text: '' };
+                    
+                    // Col 1 (Primary)
+                    const pDiv = createVerseElement(v, bookName, primaryTrans);
+                    // Col 2 (Secondary)
+                    const sDiv = createVerseElement(secVerse, bookName, secondaryTrans);
+
+                    container.appendChild(pDiv);
+                    container.appendChild(sDiv);
+                });
+            } else {
+                container.className = 'verses-grid';
+                primaryList.forEach(v => {
+                    container.appendChild(createVerseElement(v, bookName, primaryTrans));
+                });
+            }
+        }
+
+        function createVerseElement(v, bookName, trans) {
+            const div = document.createElement('div');
+            div.className = 'verse-item';
+            div.id = `verse-${v.verse}`;
+
+            const cleanText = v.text.replace(/<[^>]+>/g, '').trim();
+
+            div.innerHTML = `
+                <span class="verse-num">${v.verse}</span>
+                <span class="verse-body">${cleanText}</span>
+                <span class="verse-actions">
+                    <button class="action-chip" onclick="copyVerse('${bookName}', ${currentChapter}, ${v.verse}, '${escapeQuote(cleanText)}', '${trans}')" title="Copy Verse">📋 Copy</button>
+                    <button class="action-chip" onclick="presentVerse('${bookName}', ${currentChapter}, ${v.verse}, '${escapeQuote(cleanText)}', '${trans}')" title="Present on Screen">📺 Present</button>
+                </span>
+            `;
+            return div;
+        }
+
+        // 4. Chapter Dropdown
+        function populateChapterDropdown() {
+            const book = booksData.find(b => b.id === currentBookId) || { chapters: 50 };
+            const select = document.getElementById('select-chapter');
+            select.innerHTML = '';
+            for (let i = 1; i <= book.chapters; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `Chapter ${i}`;
+                if (i === currentChapter) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        document.getElementById('select-chapter').addEventListener('change', (e) => {
+            currentChapter = parseInt(e.target.value);
+            loadChapter();
+        });
+
+        document.getElementById('select-translation').addEventListener('change', (e) => {
+            primaryTrans = e.target.value;
+            loadChapter();
+        });
+
+        document.getElementById('select-secondary-trans').addEventListener('change', (e) => {
+            secondaryTrans = e.target.value;
+            loadChapter();
+        });
+
+        // 5. Parallel Mode Toggle
+        document.getElementById('btn-toggle-parallel').addEventListener('click', () => {
+            isParallel = !isParallel;
+            document.getElementById('parallel-status').innerText = isParallel ? 'ON' : 'OFF';
+            document.getElementById('select-secondary-trans').style.display = isParallel ? 'inline-block' : 'none';
+            loadChapter();
+        });
+
+        // 6. Navigation Buttons
+        document.getElementById('btn-prev-chapter').addEventListener('click', () => {
+            if (currentChapter > 1) {
+                currentChapter--;
+                populateChapterDropdown();
+                loadChapter();
+            } else if (currentBookId > 1) {
+                currentBookId--;
+                const prevBook = booksData.find(b => b.id === currentBookId);
+                currentChapter = prevBook.chapters;
+                populateChapterDropdown();
+                loadChapter();
+            }
+        });
+
+        document.getElementById('btn-next-chapter').addEventListener('click', () => {
+            const book = booksData.find(b => b.id === currentBookId);
+            if (currentChapter < book.chapters) {
+                currentChapter++;
+                populateChapterDropdown();
+                loadChapter();
+            } else if (currentBookId < 66) {
+                currentBookId++;
+                currentChapter = 1;
+                populateChapterDropdown();
+                loadChapter();
+            }
+        });
+
+        // 7. Present Chapter & Present Verse
+        document.getElementById('btn-present-chapter').addEventListener('click', () => {
+            const book = booksData.find(b => b.id === currentBookId);
+            const verses = Array.from(document.querySelectorAll('.verse-body')).map((el, i) => `${i+1}. ${el.innerText}`).join('\n\n');
+            const ref = `${book.name} ${currentChapter} (${primaryTrans})`;
+            const url = `presenter.html?ref=${encodeURIComponent(ref)}&verse=${encodeURIComponent(verses)}`;
+            window.open(url, '_blank');
+        });
+
+        function presentVerse(bookName, ch, v, text, trans) {
+            const ref = `${bookName} ${ch}:${v} (${trans})`;
+            const url = `presenter.html?ref=${encodeURIComponent(ref)}&verse=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyVerse(bookName, ch, v, text, trans) {
+            const copyText = `"${text}" — ${bookName} ${ch}:${v} (${trans})`;
+            navigator.clipboard.writeText(copyText).then(() => {
+                alert(`Copied to clipboard!\n${copyText}`);
+            });
+        }
+
+        // 8. Book Picker Drawer
+        function renderBooksGrid(testament) {
+            const grid = document.getElementById('books-grid');
+            grid.innerHTML = '';
+            const filtered = booksData.filter(b => b.testament === testament);
+
+            filtered.forEach(b => {
+                const card = document.createElement('div');
+                card.className = 'book-chip';
+                card.innerHTML = `
+                    <div class="book-chip-en">${b.name}</div>
+                    <div class="book-chip-sub">${b.ml} • ${b.hi}</div>
+                `;
+                card.addEventListener('click', () => {
+                    pickBook(b);
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        function switchTestament(t) {
+            document.getElementById('tab-ot').classList.toggle('active', t === 'OT');
+            document.getElementById('tab-nt').classList.toggle('active', t === 'NT');
+            renderBooksGrid(t);
+        }
+
+        function pickBook(book) {
+            document.getElementById('step-books').style.display = 'none';
+            document.getElementById('step-chapters').style.display = 'block';
+            document.getElementById('picked-book-title').innerText = `${book.name} (${book.ml})`;
+
+            const pills = document.getElementById('chapter-pills');
+            pills.innerHTML = '';
+            for (let i = 1; i <= book.chapters; i++) {
+                const pill = document.createElement('div');
+                pill.className = `chapter-pill ${b => b.id === currentBookId && i === currentChapter ? 'active' : ''}`;
+                pill.innerText = i;
+                pill.addEventListener('click', () => {
+                    currentBookId = book.id;
+                    currentChapter = i;
+                    populateChapterDropdown();
+                    loadChapter();
+                    closeBookPicker();
+                    backToBooks();
+                });
+                pills.appendChild(pill);
+            }
+        }
+
+        function backToBooks() {
+            document.getElementById('step-books').style.display = 'block';
+            document.getElementById('step-chapters').style.display = 'none';
+        }
+
+        document.getElementById('btn-open-picker').addEventListener('click', () => {
+            document.getElementById('modal-picker').classList.add('open');
+        });
+
+        function closeBookPicker() {
+            document.getElementById('modal-picker').classList.remove('open');
+        }
+
+        function getTranslationName(code) {
+            switch(code) {
+                case 'WEB': return 'World English Bible (Public Domain)';
+                case 'KJV': return 'King James Version (1769)';
+                case 'MOV': return 'സത്യവേദപുസ്തകം (Malayalam Old Version)';
+                case 'HIOV': return 'पवित्र बाइबिल (Hindi Old Version)';
+                case 'ESV': return 'English Standard Version';
+                case 'NIV': return 'New International Version';
+                default: return code;
+            }
+        }
+
+        function escapeQuote(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        // Dark Mode Toggle
+        const toggle = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('theme') === 'dark' || !localStorage.getItem('theme')) {
+            document.body.classList.add('dark-mode');
+            toggle.textContent = '☀️';
+        }
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            toggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>

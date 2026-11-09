@@ -664,13 +664,23 @@
             }
         }
 
-        // --- 4. LOAD SONG DATA ---
+        // --- 4. LOAD SONG OR BIBLE DATA ---
         const urlParams = new URLSearchParams(window.location.search);
         const songId = urlParams.get('song');
+        const scriptureRef = urlParams.get('ref');
+        const scriptureVerse = urlParams.get('verse');
 
-        if (!songId) {
+        if (scriptureRef && scriptureVerse) {
+            document.getElementById('song-title').innerText = decodeURIComponent(scriptureRef);
+            document.getElementById('song-artist').innerText = "Holy Scripture";
+            document.title = `${decodeURIComponent(scriptureRef)} - Presenter View`;
+
+            slides = parseLyricsIntoSlides(decodeURIComponent(scriptureVerse));
+            buildDrawerGrid();
+            renderSlide(0);
+        } else if (!songId) {
             document.getElementById('song-title').innerText = "No song selected.";
-            document.getElementById('slide-text').innerText = "Please open Presenter View from a song page.";
+            document.getElementById('slide-text').innerText = "Please open Presenter View from a song or Bible page.";
         } else {
             fetch('lyrics_api.json')
                 .then(res => res.json())
