@@ -580,7 +580,8 @@
         function createVerseElement(v, bookName, trans, isPrimary = true) {
             const div = document.createElement('div');
             div.className = `verse-item ${isPrimary ? 'verse-primary' : 'verse-secondary'}`;
-            div.id = `verse-${v.verse}`;
+            div.id = `${isPrimary ? 'p' : 's'}-verse-${v.verse}`;
+            div.setAttribute('data-verse', v.verse);
 
             const cleanText = cleanVerseText(v.text);
 
@@ -661,26 +662,111 @@
             }
         });
 
-        // 7. Present Chapter & Present Verse
+        // 7. Present Chapter & Present Verse (with Parallel Bilingual Support)
         document.getElementById('btn-present-chapter').addEventListener('click', () => {
-            const book = booksData.find(b => b.id === currentBookId);
-            const primaryVerseElements = Array.from(document.querySelectorAll('.verse-primary .verse-body'));
-            const verses = primaryVerseElements.map((el, i) => `${i+1}. ${el.innerText}`).join('\n\n');
-            const ref = `${book.name} ${currentChapter} (${primaryTrans})`;
-            const url = `presenter.html?ref=${encodeURIComponent(ref)}&verse=${encodeURIComponent(verses)}`;
-            window.open(url, '_blank');
+            const book = booksData.find(b => b.id === currentBookId) || { name: 'Genesis' };
+            const primaryVerseElements = Array.from(document.querySelectorAll('.verse-primary'));
+            const secondaryVerseElements = isParallel ? Array.from(document.querySelectorAll('.verse-secondary')) : [];
+
+            const slides = primaryVerseElements.map((el, i) => {
+                const vNum = el.getAttribute('data-verse') || (i + 1);
+                const pText = el.querySelector('.verse-body') ? el.querySelector('.verse-body').innerText : '';
+                let sText = '';
+                if (isParallel && secondaryVerseElements[i]) {
+                    const sb = secondaryVerseElements[i].querySelector('.verse-body');
+                    if (sb) sText = sb.innerText;
+                }
+                return {
+                    tag: `${book.name} ${currentChapter}:${vNum}`,
+                    text: pText,
+                    secondary: sText
+                };
+            });
+
+            const refTitle = `${book.name} ${currentChapter}`;
+            const subTitle = isParallel 
+                ? `${getTranslationName(primaryTrans)} • ${getTranslationName(secondaryTrans)}`
+                : getTranslationName(primaryTrans);
+
+            const payload = {
+                title: refTitle,
+                artist: subTitle,
+                slides: slides,
+                startIndex: 0,
+                timestamp: Date.now()
+            };
+
+            localStorage.setItem('church_presenter_data', JSON.stringify(payload));
+            window.open('presenter.html?source=storage', '_blank');
         });
 
         function presentVerse(bookName, ch, v, text, trans) {
-            const ref = `${bookName} ${ch}:${v} (${trans})`;
-            const url = `presenter.html?ref=${encodeURIComponent(ref)}&verse=${encodeURIComponent(text)}`;
+            const pEl = document.querySelector(`.verse-primary[data-verse="${v}"] .verse-body`);
+            const sEl = isParallel ? document.querySelector(`.verse-secondary[data-verse="${v}"] .verse-body`) : null;
+
+            const primaryText = pEl ? pEl.innerText : text;
+            const secondaryText = sEl ? sEl.innerText : "";
+
+            const primaryVerseElements = Array.from(document.querySelectorAll('.verse-primary'));
+            const secondaryVerseElements = isParallel ? Array.from(document.querySelectorAll('.verse-secondary')) : [];
+
+            let targetIndex = 0;
+            const slides = primaryVerseElements.map((el, i) => {
+                const vNum = el.getAttribute('data-verse') || (i + 1);
+                const pText = el.querySelector('.verse-body') ? el.querySelector('.verse-body').innerText : '';
+                let sText = '';
+                if (isParallel && secondaryVerseElements[i]) {
+                    const sb = secondaryVerseElements[i].querySelector('.verse-body');
+                    if (sb) sText = sb.innerText;
+                }
+                if (parseInt(vNum) === parseInt(v)) {
+                    targetIndex = i;
+                }
+                return {
+                    tag: `${bookName} ${ch}:${vNum}`,
+                    text: pText,
+                    secondary: sText
+                };
+            });
+
+            const refTitle = `${bookName} ${ch}:${v}`;
+            const subTitle = isParallel 
+                ? `${getTranslationName(primaryTrans)} • ${getTranslationName(secondaryTrans)}`
+                : getTranslationName(trans);
+
+            const payload = {
+                title: refTitle,
+                artist: subTitle,
+                slides: slides.length > 0 ? slides : [{
+                    tag: `${bookName} ${ch}:${v}`,
+                    text: primaryText,
+                    secondary: secondaryText
+                }],
+                startIndex: targetIndex,
+                timestamp: Date.now()
+            };
+
+            localStorage.setItem('church_presenter_data', JSON.stringify(payload));
+
+            let url = `presenter.html?source=storage&ref=${encodeURIComponent(refTitle)}&verse=${encodeURIComponent(primaryText)}`;
+            if (secondaryText) {
+                url += `&secondary=${encodeURIComponent(secondaryText)}`;
+            }
             window.open(url, '_blank');
         }
 
         function copyVerse(bookName, ch, v, text, trans) {
-            const copyText = `"${text}" — ${bookName} ${ch}:${v} (${trans})`;
+            const pEl = document.querySelector(`.verse-primary[data-verse="${v}"] .verse-body`);
+            const sEl = isParallel ? document.querySelector(`.verse-secondary[data-verse="${v}"] .verse-body`) : null;
+            const pText = pEl ? pEl.innerText : text;
+
+            let copyText = `"${pText}" — ${bookName} ${ch}:${v} (${trans})`;
+            if (isParallel && sEl) {
+                copyText = `"${pText}" (${primaryTrans})\n\n"${sEl.innerText}" (${secondaryTrans})\n\n— ${bookName} ${ch}:${v}`;
+            }
+
             navigator.clipboard.writeText(copyText).then(() => {
-                alert(`Copied to clipboard!\n${copyText}`);
+                alert(`Copied to clipboard!\n\n${copyText}`);
             });
         }
 

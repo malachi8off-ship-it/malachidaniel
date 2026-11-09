@@ -8,7 +8,7 @@
     <!-- Google Fonts for Professional Projection -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600;700&family=Montserrat:wght@500;700;800&family=Noto+Sans+Devanagari:wght@500;700&family=Noto+Sans+Malayalam:wght@500;700&family=Outfit:wght@500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600;700&family=Montserrat:wght@500;700;800&family=Noto+Sans+Devanagari:wght@500;700&family=Noto+Sans+Malayalam:wght@500;700&family=Noto+Sans+Tamil:wght@500;700&family=Outfit:wght@500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -16,7 +16,7 @@
             --text-color: #ffffff;
             --text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.8);
             --font-size: 52px;
-            --font-family: 'Montserrat', 'Noto Sans Malayalam', 'Noto Sans Devanagari', sans-serif;
+            --font-family: 'Montserrat', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', sans-serif;
             --line-height: 1.5;
             --text-align: center;
             --accent-color: #38bdf8;
@@ -166,12 +166,52 @@
             max-width: 100%;
         }
 
+        .primary-text {
+            font-size: var(--font-size);
+            line-height: 1.45;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            font-weight: 600;
+            white-space: pre-line;
+        }
+
+        .parallel-divider {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            margin: 20px auto;
+            opacity: 0.8;
+            border-radius: 2px;
+        }
+
+        .secondary-text {
+            font-size: calc(var(--font-size) * 0.84);
+            line-height: 1.55;
+            color: #fde68a;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.9), 0 1px 4px rgba(0, 0, 0, 0.8);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: pre-line;
+        }
+
         body.theme-lower-third .slide-text {
             background: rgba(0, 0, 0, 0.75);
             padding: 20px 40px;
             border-radius: 16px;
             backdrop-filter: blur(10px);
             font-size: clamp(28px, 4vw, 42px);
+        }
+
+        body.theme-lower-third .primary-text {
+            font-size: clamp(26px, 3.8vw, 38px);
+        }
+
+        body.theme-lower-third .parallel-divider {
+            margin: 10px auto;
+        }
+
+        body.theme-lower-third .secondary-text {
+            font-size: clamp(22px, 3.2vw, 32px);
         }
 
         /* Blackout State */
@@ -505,13 +545,14 @@
         <div class="dock-group">
             <label>Font:</label>
             <select id="select-font">
-                <option value="'Montserrat', sans-serif">Montserrat (Bold Modern)</option>
-                <option value="'Inter', sans-serif">Inter (Clean Crisp)</option>
-                <option value="'Cinzel', serif">Cinzel (Majestic Hymnal)</option>
-                <option value="'Playfair Display', serif">Playfair (Classic Worship)</option>
-                <option value="'Outfit', sans-serif">Outfit (Contemporary)</option>
+                <option value="'Montserrat', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', sans-serif">Montserrat (Bold Modern)</option>
+                <option value="'Inter', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', sans-serif">Inter (Clean Crisp)</option>
+                <option value="'Cinzel', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', serif">Cinzel (Majestic Hymnal)</option>
+                <option value="'Playfair Display', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', serif">Playfair (Classic Worship)</option>
+                <option value="'Outfit', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', sans-serif">Outfit (Contemporary)</option>
                 <option value="'Noto Sans Malayalam', sans-serif">Malayalam Script</option>
                 <option value="'Noto Sans Devanagari', sans-serif">Hindi / Devanagari</option>
+                <option value="'Noto Sans Tamil', sans-serif">Tamil Script</option>
             </select>
         </div>
 
@@ -625,6 +666,16 @@
             return generatedSlides.length > 0 ? generatedSlides : [{ tag: "", text: cleanText }];
         }
 
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // --- 3. RENDER CURRENT SLIDE ---
         function renderSlide(index) {
             if (slides.length === 0) return;
@@ -644,7 +695,15 @@
 
             setTimeout(() => {
                 verseBadge.innerText = slide.tag || "";
-                slideText.innerText = slide.text;
+                if (slide.secondary) {
+                    slideText.innerHTML = `
+                        <div class="primary-text">${escapeHtml(slide.text)}</div>
+                        <div class="parallel-divider"></div>
+                        <div class="secondary-text">${escapeHtml(slide.secondary)}</div>
+                    `;
+                } else {
+                    slideText.innerText = slide.text;
+                }
                 slideText.style.opacity = '1';
                 slideText.style.transform = 'translateY(0)';
             }, 100);
@@ -670,22 +729,54 @@
 
         // --- 4. LOAD SONG OR BIBLE DATA ---
         const urlParams = new URLSearchParams(window.location.search);
+        const sourceMode = urlParams.get('source');
         const songId = urlParams.get('song');
         const scriptureRef = urlParams.get('ref');
         const scriptureVerse = urlParams.get('verse');
+        const scriptureSecondary = urlParams.get('secondary');
 
-        if (scriptureRef && scriptureVerse) {
+        let dataLoaded = false;
+
+        if (sourceMode === 'storage') {
+            try {
+                const raw = localStorage.getItem('church_presenter_data');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.slides && data.slides.length > 0) {
+                        document.getElementById('song-title').innerText = data.title;
+                        document.getElementById('song-artist').innerText = data.artist || "Holy Scripture";
+                        document.title = `${data.title} - Presenter View`;
+
+                        slides = data.slides;
+                        buildDrawerGrid();
+                        renderSlide(data.startIndex || 0);
+                        dataLoaded = true;
+                    }
+                }
+            } catch (err) {
+                console.error("Could not load presentation from storage", err);
+            }
+        }
+
+        if (!dataLoaded && scriptureRef && scriptureVerse) {
             document.getElementById('song-title').innerText = decodeURIComponent(scriptureRef);
             document.getElementById('song-artist').innerText = "Holy Scripture";
             document.title = `${decodeURIComponent(scriptureRef)} - Presenter View`;
 
-            slides = parseLyricsIntoSlides(decodeURIComponent(scriptureVerse));
+            const sec = scriptureSecondary ? decodeURIComponent(scriptureSecondary) : "";
+            if (sec) {
+                slides = [{
+                    tag: decodeURIComponent(scriptureRef),
+                    text: decodeURIComponent(scriptureVerse),
+                    secondary: sec
+                }];
+            } else {
+                slides = parseLyricsIntoSlides(decodeURIComponent(scriptureVerse));
+            }
             buildDrawerGrid();
             renderSlide(0);
-        } else if (!songId) {
-            document.getElementById('song-title').innerText = "No song selected.";
-            document.getElementById('slide-text').innerText = "Please open Presenter View from a song or Bible page.";
-        } else {
+            dataLoaded = true;
+        } else if (!dataLoaded && songId) {
             fetch('lyrics_api.json')
                 .then(res => res.json())
                 .then(data => {
@@ -706,6 +797,10 @@
                     document.getElementById('song-title').innerText = "Error loading library data.";
                     console.error(err);
                 });
+            dataLoaded = true;
+        } else if (!dataLoaded) {
+            document.getElementById('song-title').innerText = "No content selected.";
+            document.getElementById('slide-text').innerText = "Please open Presenter View from a song or Bible page.";
         }
 
         // --- 5. KEYBOARD SHORTCUTS ---
@@ -829,9 +924,16 @@
                 const card = document.createElement('div');
                 card.className = `thumb-card ${idx === currentIndex ? 'active' : ''}`;
                 card.id = `thumb-${idx}`;
+
+                let secondaryHtml = '';
+                if (slide.secondary) {
+                    secondaryHtml = `<div class="thumb-secondary" style="font-size: 0.82rem; color: #fde68a; opacity: 0.9; margin-top: 6px; line-height: 1.35; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(slide.secondary)}</div>`;
+                }
+
                 card.innerHTML = `
-                    <div class="thumb-badge">${slide.tag || `Slide ${idx + 1}`}</div>
-                    <div class="thumb-text">${slide.text}</div>
+                    <div class="thumb-badge">${escapeHtml(slide.tag || `Slide ${idx + 1}`)}</div>
+                    <div class="thumb-text">${escapeHtml(slide.text)}</div>
+                    ${secondaryHtml}
                 `;
                 card.addEventListener('click', () => {
                     renderSlide(idx);
