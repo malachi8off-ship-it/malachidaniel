@@ -571,9 +571,13 @@
         function parseLyricsIntoSlides(rawLyrics) {
             if (!rawLyrics) return [];
 
-            // Replace HTML break tags with standard newline
+            // Replace HTML break tags with standard newline and clean Strong's / footnotes / tags
             const cleanText = rawLyrics
+                .replace(/<S[^>]*>[\s\S]*?<\/S>/gi, '')
+                .replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, '')
+                .replace(/<sub[^>]*>[\s\S]*?<\/sub>/gi, '')
                 .replace(/<br\s*[\/]?>/gi, '\n')
+                .replace(/<[^>]+>/g, '')
                 .replace(/&nbsp;/g, ' ')
                 .trim();
 

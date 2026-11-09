@@ -13,13 +13,13 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 
     <style>
         :root {
             --bible-font-size: 1.18rem;
-            --bible-font-family: 'Lora', 'Noto Sans Malayalam', 'Noto Sans Devanagari', Georgia, serif;
+            --bible-font-family: 'Lora', 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Noto Sans Tamil', Georgia, serif;
         }
 
         .bible-container {
@@ -387,12 +387,15 @@
 
                 <!-- Primary Translation -->
                 <select class="bible-select" id="select-translation" title="Select Bible Translation">
-                    <option value="WEB">🇬🇧 WEB (Modern English)</option>
-                    <option value="KJV">🇬🇧 KJV (King James)</option>
+                    <option value="BSB">🇬🇧 BSB (Berean Standard Bible - Modern)</option>
+                    <option value="KJV">🇬🇧 KJV (King James 1769)</option>
+                    <option value="WEB">🇬🇧 WEB (World English Bible)</option>
                     <option value="MOV">🇮🇳 Malayalam (സത്യവേദപുസ്തകം)</option>
                     <option value="HIOV">🇮🇳 Hindi (पवित्र बाइबिल)</option>
+                    <option value="TBSI">🇮🇳 Tamil (பரிசுத்த வேதாகமம்)</option>
                     <option value="ESV">🇬🇧 ESV (English Standard)</option>
-                    <option value="NIV">🇬🇧 NIV (New International)</option>
+                    <option value="NKJV">🇬🇧 NKJV (New King James)</option>
+                    <option value="NLT">🇬🇧 NLT (New Living Translation)</option>
                 </select>
             </div>
 
@@ -402,10 +405,13 @@
                     ⚖️ Parallel Mode: <span id="parallel-status">OFF</span>
                 </button>
                 <select class="bible-select" id="select-secondary-trans" style="display: none;">
-                    <option value="MOV">🇮🇳 Malayalam</option>
-                    <option value="WEB">🇬🇧 WEB</option>
-                    <option value="KJV">🇬🇧 KJV</option>
-                    <option value="HIOV">🇮🇳 Hindi</option>
+                    <option value="MOV">🇮🇳 Malayalam (സത്യവേദപുസ്തകം)</option>
+                    <option value="HIOV">🇮🇳 Hindi (पवित्र बाइबिल)</option>
+                    <option value="TBSI">🇮🇳 Tamil (பரிசுத்த வேதாகமம்)</option>
+                    <option value="BSB">🇬🇧 BSB (Berean Standard)</option>
+                    <option value="KJV">🇬🇧 KJV (King James)</option>
+                    <option value="WEB">🇬🇧 WEB (World English)</option>
+                    <option value="ESV">🇬🇧 ESV (English Standard)</option>
                 </select>
 
                 <!-- Present Chapter to Screen Button -->
@@ -468,7 +474,7 @@
         // State
         let currentBookId = 1;
         let currentChapter = 1;
-        let primaryTrans = 'WEB';
+        let primaryTrans = 'BSB';
         let secondaryTrans = 'MOV';
         let isParallel = false;
         let booksData = [];
@@ -485,11 +491,15 @@
             });
 
         function initApp() {
-            // Check URL parameters (e.g. ?book=43&chapter=3&trans=WEB)
+            // Check URL parameters (e.g. ?book=43&chapter=3&trans=BSB)
             const params = new URLSearchParams(window.location.search);
             if (params.has('book')) currentBookId = parseInt(params.get('book')) || 1;
             if (params.has('chapter')) currentChapter = parseInt(params.get('chapter')) || 1;
-            if (params.has('trans')) primaryTrans = params.get('trans');
+            if (params.has('trans')) {
+                const requestedTrans = params.get('trans');
+                // Avoid ablated or blocked translations
+                primaryTrans = (requestedTrans === 'NIV') ? 'BSB' : requestedTrans;
+            }
 
             document.getElementById('select-translation').value = primaryTrans;
             populateChapterDropdown();
@@ -529,6 +539,18 @@
             }
         }
 
+        // Clean verse text from Strong's Concordance numbers, footnotes, and HTML tags
+        function cleanVerseText(rawHtml) {
+            if (!rawHtml) return "";
+            return rawHtml
+                .replace(/<S[^>]*>[\s\S]*?<\/S>/gi, "")      // Strip KJV Strong's numbers (<S>5329</S>)
+                .replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, "")  // Strip footnote references ([1], ⓐ)
+                .replace(/<sub[^>]*>[\s\S]*?<\/sub>/gi, "")  // Strip subscripts
+                .replace(/<[^>]+>/g, "")                     // Strip remaining HTML tags
+                .replace(/\s+/g, " ")                        // Normalize multiple whitespace
+                .trim();
+        }
+
         // 3. Render Verses
         function renderVerses(primaryList, secondaryList, bookName) {
             const container = document.getElementById('verses-container');
@@ -540,9 +562,9 @@
                     const secVerse = secondaryList[i] || { text: '' };
                     
                     // Col 1 (Primary)
-                    const pDiv = createVerseElement(v, bookName, primaryTrans);
+                    const pDiv = createVerseElement(v, bookName, primaryTrans, true);
                     // Col 2 (Secondary)
-                    const sDiv = createVerseElement(secVerse, bookName, secondaryTrans);
+                    const sDiv = createVerseElement(secVerse, bookName, secondaryTrans, false);
 
                     container.appendChild(pDiv);
                     container.appendChild(sDiv);
@@ -550,17 +572,17 @@
             } else {
                 container.className = 'verses-grid';
                 primaryList.forEach(v => {
-                    container.appendChild(createVerseElement(v, bookName, primaryTrans));
+                    container.appendChild(createVerseElement(v, bookName, primaryTrans, true));
                 });
             }
         }
 
-        function createVerseElement(v, bookName, trans) {
+        function createVerseElement(v, bookName, trans, isPrimary = true) {
             const div = document.createElement('div');
-            div.className = 'verse-item';
+            div.className = `verse-item ${isPrimary ? 'verse-primary' : 'verse-secondary'}`;
             div.id = `verse-${v.verse}`;
 
-            const cleanText = v.text.replace(/<[^>]+>/g, '').trim();
+            const cleanText = cleanVerseText(v.text);
 
             div.innerHTML = `
                 <span class="verse-num">${v.verse}</span>
@@ -642,7 +664,8 @@
         // 7. Present Chapter & Present Verse
         document.getElementById('btn-present-chapter').addEventListener('click', () => {
             const book = booksData.find(b => b.id === currentBookId);
-            const verses = Array.from(document.querySelectorAll('.verse-body')).map((el, i) => `${i+1}. ${el.innerText}`).join('\n\n');
+            const primaryVerseElements = Array.from(document.querySelectorAll('.verse-primary .verse-body'));
+            const verses = primaryVerseElements.map((el, i) => `${i+1}. ${el.innerText}`).join('\n\n');
             const ref = `${book.name} ${currentChapter} (${primaryTrans})`;
             const url = `presenter.html?ref=${encodeURIComponent(ref)}&verse=${encodeURIComponent(verses)}`;
             window.open(url, '_blank');
@@ -725,12 +748,15 @@
 
         function getTranslationName(code) {
             switch(code) {
-                case 'WEB': return 'World English Bible (Public Domain)';
+                case 'BSB': return 'Berean Standard Bible (Modern English)';
                 case 'KJV': return 'King James Version (1769)';
+                case 'WEB': return 'World English Bible (Public Domain)';
                 case 'MOV': return 'സത്യവേദപുസ്തകം (Malayalam Old Version)';
                 case 'HIOV': return 'पवित्र बाइबिल (Hindi Old Version)';
+                case 'TBSI': return 'பரிசுத்த வேதாகமம் (Tamil BSI Version)';
                 case 'ESV': return 'English Standard Version';
-                case 'NIV': return 'New International Version';
+                case 'NKJV': return 'New King James Version';
+                case 'NLT': return 'New Living Translation';
                 default: return code;
             }
         }
