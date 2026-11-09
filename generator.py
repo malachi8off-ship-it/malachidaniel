@@ -83,7 +83,6 @@ master_template = master_template.replace('href="style.css"', 'href="../style.cs
 master_template = master_template.replace('href="request.html"', 'href="../request.html"')
 master_template = master_template.replace('href="bible.html"', 'href="../bible.html"')
 master_template = master_template.replace('href="setlist.html"', 'href="../setlist.html"')
-master_template = master_template.replace('src="chords.js"', 'src="../chords.js"')
 master_template = master_template.replace('href="/"', 'href="../index.html"')
 
 def detect_language(text_to_check, lyrics_text=""):
@@ -216,12 +215,17 @@ for i, song in enumerate(songs_data):
     </div>
 </div>
 '''
-    # 2. INJECT PRESENTER VIEW BUTTON
+    # 2. INJECT PRESENTER VIEW & SETLIST BUTTONS
+    safe_title = song['title'].replace("'", "\\'").replace('"', '&quot;')
+    safe_author = song['author'].replace("'", "\\'").replace('"', '&quot;')
     full_song_content += f'''
-<div style="margin-top: 25px; margin-bottom: 30px; text-align: center;">
-    <a href="../presenter.html?song={song['filename']}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; color: #3498db; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: all 0.2s;">
+<div style="margin-top: 25px; margin-bottom: 30px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+    <a href="../presenter.html?song={song['filename']}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 10px 22px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 0.92rem; transition: all 0.2s;">
         📺 Launch Presenter View
     </a>
+    <button onclick="addToSundaySetlist('{song['filename']}', '{safe_title}', '{safe_author}')" id="btnSetlistAdd" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 10px 22px; border-radius: 30px; font-weight: bold; font-size: 0.92rem; cursor: pointer; transition: all 0.2s;">
+        📋 Add to Sunday Setlist
+    </button>
 </div>
 '''
     full_song_content += f'<div class="lyric-text">{song["lyrics"]}</div>'
@@ -509,49 +513,153 @@ with open(template_path, 'r', encoding='utf-8') as f:
     root_template = f.read()
 
 home_content = '''
-<div class="glass-search-container" style="text-align: center; padding: 40px 20px;">
-    <h2 style="margin-bottom: 30px; font-size: 1.8rem;">Explore the Channel</h2>
+<div class="homepage-hero-wrapper" style="text-align: center; padding: 40px 20px 30px; margin-bottom: 25px;">
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; padding: 6px 18px; border-radius: 30px; font-size: 0.88rem; font-weight: 700; margin-bottom: 18px;">
+        🕊️ Free • Ad-Free • Built for the Kingdom of God
+    </div>
     
-    <div class="lyrics-grid">
-        <a href="bible.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">✝️ Holy Bible</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Multi-lingual scripture in English, Malayalam & Hindi with church projection.</p>
+    <h2 style="font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; line-height: 1.25; margin-bottom: 14px; color: var(--header-title); font-family: var(--ui-font);">
+        Your Complete Christian Worship &amp; Church Tech Hub
+    </h2>
+    
+    <p style="font-size: clamp(0.95rem, 1.8vw, 1.15rem); color: var(--text-muted); max-width: 800px; margin: 0 auto 28px; line-height: 1.6;">
+        Empowering worship leaders, church media teams, musicians, and believers everywhere. Explore 660+ verified song lyrics with theological roots, multi-lingual Holy Scriptures, church slide projection, Sunday setlist planning, and OBS livestream overlays.
+    </p>
+
+    <!-- Quick Navigation Hub Pills -->
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
+        <a href="lyrics-archive/index.html" class="btn-primary" style="padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+            📖 Explore 660+ Lyrics
+        </a>
+        <a href="bible.html" class="btn-primary" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+            ✝️ Holy Bible Hub
+        </a>
+        <a href="setlist.html" class="btn-primary" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+            📋 Sunday Setlist Builder
+        </a>
+        <a href="karaoke-tracks/index.html" class="btn-primary" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 12px 22px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+            🎤 Worship Karaokes
+        </a>
+    </div>
+</div>
+
+<!-- Section: What We Offer -->
+<div class="glass-search-container" style="padding: 35px 25px; margin-bottom: 40px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--header-title); margin-bottom: 8px;">
+            ✨ What Our Website Offers
+        </h2>
+        <p style="color: var(--text-muted); font-size: 1rem; max-width: 650px; margin: 0 auto;">
+            Everything you need for personal devotion, worship team rehearsals, and church services in one place.
+        </p>
+    </div>
+
+    <div class="lyrics-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;">
+        <!-- Card 1 -->
+        <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">📖</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">660+ Verified Song Lyrics</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Extensive worship catalog spanning English, Malayalam, Hindi, Manglish, and Hinglish with on-site streaming on Apple Music, Spotify, YouTube & Amazon Music.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #38bdf8; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Explore Library →
+            </span>
         </a>
 
-        <a href="setlist.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">📋 Sunday Setlist</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Plan worship flow, set song keys, and project entire services seamlessly.</p>
+        <!-- Card 2 -->
+        <a href="bible.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">✝️</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Multi-Lingual Holy Bible</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Read scripture across 9 translations including BSB (Modern), KJV 1769, Malayalam (സത്യവേദപുസ്തകം), Hindi (पवित्र बाइबिल), and Tamil with side-by-side parallel mode.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #38bdf8; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Read Scripture →
+            </span>
         </a>
 
-        <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">📖 Lyrics Archive</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Search rare hymns and official songs.</p>
+        <!-- Card 3 -->
+        <a href="presenter.html" target="_blank" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">📺</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Live Church Presenter</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                ProPresenter-style live projection tool. Features 4-line smart verse slides, digital service clock, watermark, blackout mode (B), slide grid overview (G), and themes.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #fbbf24; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Launch Presenter →
+            </span>
         </a>
-        
-        <a href="karaoke-tracks/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">🎤 Karaoke Tracks</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">High-quality instrumentals for worship.</p>
+
+        <!-- Card 4 -->
+        <a href="setlist.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">📋</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Sunday Setlist Builder</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Assemble your Sunday worship flow in minutes. Choose custom song keys, assign lead vocalists, add transition cues, and launch the entire service into Presenter View.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #fbbf24; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Plan Service →
+            </span>
         </a>
-        
-        <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">✨ Testimonies</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Powerful stories and biblical reflections.</p>
+
+        <!-- Card 5 -->
+        <a href="presenter.html?mode=lower-third" target="_blank" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">📡</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">OBS &amp; Livestream Overlays</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Broadcast-ready transparent lower-third overlays for OBS Studio and vMix. Synchronizes live in real-time (0ms latency) with the worship presenter on your laptop.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #38bdf8; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Open OBS Source →
+            </span>
         </a>
-        
-        <a href="coming-soon.html" class="song-card interactive-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-decoration: none; text-align: center; height: 100%;">
-            <h3 class="card-title" style="font-size: 1.5rem; margin-bottom: 15px;">🎧 Remixes & Mashups</h3>
-            <p class="card-subtitle" style="font-size: 1rem; white-space: normal; opacity: 0.9;">Listen to the latest channel releases.</p>
+
+        <!-- Card 6 -->
+        <a href="karaoke-tracks/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">🎤</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Worship Karaokes &amp; Backing</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                High-definition instrumental tracks and worship karaokes. Ideal for choir practice, youth fellowships, home church gatherings, and vocal rehearsals.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #c084fc; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Sing Worship →
+            </span>
+        </a>
+
+        <!-- Card 7 -->
+        <a href="lyrics-archive/index.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">💡</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Theological Song Meanings</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Biblical reflections and theological backgrounds for each worship song to help praise teams and congregations worship with spiritual understanding.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #38bdf8; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Learn Meanings →
+            </span>
+        </a>
+
+        <!-- Card 8 -->
+        <a href="request.html" class="song-card interactive-card" style="display: flex; flex-direction: column; padding: 26px 20px; text-decoration: none; border-radius: 16px;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">💌</div>
+            <h3 class="card-title" style="font-size: 1.18rem; margin-bottom: 8px; color: var(--header-title);">Instant Song Request Desk</h3>
+            <p class="card-subtitle" style="font-size: 0.88rem; white-space: normal; line-height: 1.55; color: var(--text-muted);">
+                Can't find a rare hymn or local release? Submit a request and our team gets notified instantly via Telegram bot to add it to the platform.
+            </p>
+            <span style="margin-top: auto; padding-top: 14px; color: #38bdf8; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                Request a Song →
+            </span>
         </a>
     </div>
 </div>
 '''
 
-home_html = root_template.replace('{{TITLE}}', 'Malachi Daniel Hub')\
-                         .replace('{{ARTIST}}', 'Karaokes, Covers, Mashups & Rare Christian Lyrics')\
-                         .replace('{{CATEGORY}}', 'Hub')\
+home_html = root_template.replace('{{TITLE}}', 'Christian Worship & Ministry Hub')\
+                         .replace('{{ARTIST}}', '660+ Verified Song Lyrics, Multi-Lingual Bible, Live Presenter & Sunday Service Setlists')\
+                         .replace('{{CATEGORY}}', 'Worship Portal')\
                          .replace('{{LYRICS_CONTENT}}', home_content)\
                          .replace('{{BACK_URL}}', '#')\
-                         .replace('{{BACK_TEXT}}', 'Welcome to the Hub')
+                         .replace('{{BACK_TEXT}}', 'Welcome to the Platform')
                          
 with open(os.path.join(BASE_DIR, 'public', 'index.html'), 'w', encoding='utf-8') as f:
     f.write(home_html)

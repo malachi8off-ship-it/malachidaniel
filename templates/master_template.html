@@ -103,7 +103,30 @@
                 fetch('/api/view?p=' + encodeURIComponent(p), { method: 'POST', keepalive: true });
             }
         } catch(e) {}
+
+        // Add to Sunday Setlist Helper
+        function addToSundaySetlist(songId, title, artist) {
+            let setlist = [];
+            try { setlist = JSON.parse(localStorage.getItem('sunday_setlist') || '[]'); } catch(e) {}
+            if (setlist.some(s => s.id === songId)) {
+                alert('"' + title + '" is already in your Sunday Setlist!');
+                return;
+            }
+            setlist.push({ id: songId, title: title, artist: artist, key: 'G', leader: '', notes: '' });
+            localStorage.setItem('sunday_setlist', JSON.stringify(setlist));
+            const btn = document.getElementById('btnSetlistAdd');
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ Added to Setlist!';
+                btn.style.borderColor = '#10b981';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2200);
+            }
+        }
     </script>
-    <script src="chords.js"></script>
 </body>
 </html>
