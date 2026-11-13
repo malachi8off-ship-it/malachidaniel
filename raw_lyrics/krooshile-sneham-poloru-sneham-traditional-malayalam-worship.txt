@@ -1,7 +1,7 @@
 Krooshile Sneham Poloru Sneham
 Traditional Malayalam Worship
 meaning
-A deeply reverent Malayalam worship hymn reflecting on the sacrificial love revealed on the cross of Calvary.
+This worship song profoundly extols the unparalleled love of God revealed through Christ's sacrifice on the Cross, which conquered darkness and eternal death (Romans 6:23). It highlights the transformative power of this love, granting believers adoption into God's family as sons and daughters (Romans 8:15), prompting a heartfelt response of continuous gratitude and worship to God as "Abba." The core biblical message centers on the unique redemptive love of Christ and the resultant call to praise.
 apple_data
 NONE
 lyrics
@@ -56,15 +56,6 @@ lyrics
 എന്നെ സ്വന്തം പുത്രനായ് മാറ്റിയവന്‍
 തന്‍ ജീവന്‍ എനിക്കായ് നല്‍കിയവന്‍
 എന്നെ സ്വന്തം പുത്രിയായ്, മാറ്റിയവന്‍
-- All;
-- Male;
-- Female;
-R/S
-- Reverend / Shusrooshi
-Change singing roles by double tapping the role column. Add / remove music segway notation by double tapping
-🎵🎵🎵
-/ empty line. For more info, visit the FAQ page.
-Malayalam & Manglish Song Lyrics of %%title%% | ക്രൂശിലെ സ്‌നേഹം, പോലൊരു സ്‌നേഹം ഇല്ല ഇല്ലാ..											Krooshile Sneham Poloru Sneham Lyrics | Krooshile Sneham Poloru Sneham Song Lyrics | Krooshile Sneham Poloru Sneham Karaoke | Krooshile Sneham Poloru Sneham Track | Krooshile Sneham Poloru Sneham Malayalam Lyrics | Krooshile Sneham Poloru Sneham Manglish Lyrics | Krooshile Sneham Poloru Sneham Devotional Lyrics | Syro Malabar Songs | Syro Malabar Song Lyrics | Syro-Malabar Songs | Syro-Malabar Song Lyrics | SyroMalabar Songs | SyroMalabar Song Lyrics | Karaoke | Track | Krooshile Sneham Poloru Sneham Christian Devotional Song Lyrics | Krooshile Sneham Poloru Sneham Christian Devotional | Krooshile Sneham Poloru Sneham Christian Song Lyrics | Krooshile Sneham Poloru Sneham MIDI | ലിറിക്‌സ്  | സോങ് | പാട്ട്  | ക്രിസ്ത്യൻ  സിറോ മലബാർ | ഗാനം | മലയാളം വരികൾ | മംഗ്ലീഷ് വരികൾ
 
 [Manglish]
 Krooshile Sneham, Poloru Sneham
@@ -117,4 +108,3 @@ Than Jeevan Enikkaai Nalkiyavan
 Enne Swantham Puthranaai Maattiyavan
 Than Jeevan Enikkaai Nalkiyavan
 Enne Swantham Puthriyaai, Maattiyavan
-Krooshile Sneham Poloru Sneham Krushile Pol Oru

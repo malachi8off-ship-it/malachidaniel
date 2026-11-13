@@ -53,19 +53,27 @@ def get_existing_slugs():
             existing.add(f.replace('.txt', '').lower())
     return existing
 
-def clean_madely_section(raw_text):
-    lines = [l.strip() for l in raw_text.splitlines()]
+def sanitize_lyrics(text):
+    lines = [l.strip() for l in text.splitlines()]
     cleaned = []
-    skip_headers = {
-        'malayalam lyrics', 'manglish lyrics', 'my notes', 'a', '|', 
-        'media', 'loading...', 'share', 'print', 'slideshow', 'download'
-    }
+    skip_words = [
+        'change singing roles', 'double tapping', 'segway notation', 'faq page',
+        'song lyrics of', 'devotional lyrics', 'syro malabar', 'syro-malabar',
+        'syromalabar', 'karaoke |', 'midi |', 'ലിറിക്സ്', 'ലിറിക്‌സ്', 'വരികൾ',
+        'all;', 'male;', 'female;', 'reverend', 'shusrooshi', 'szuroochi'
+    ]
+    skip_headers = {'malayalam lyrics', 'manglish lyrics', 'my notes', 'a', '|', 'media', 'loading...'}
     for l in lines:
         if not l or l.lower() in skip_headers:
             continue
-        # Strip choir tags (M, F, A, 🔔, dashes)
-        l = re.sub(r'^(M|F|A)\s*$', '', l)
-        l = re.sub(r'[🔔\u2014\u2013\-]{2,}', '', l).strip()
+        lower = l.lower()
+        if any(sw in lower for sw in skip_words):
+            continue
+        l = re.sub(r'^(M|F|A|R/S|R|S)\s*$', '', l)
+        l = re.sub(r'^[🔔\u2014\u2013\-]{2,}', '', l).strip()
+        # Drop long SEO keyword stuffing lines
+        if l.count('|') >= 2:
+            continue
         if l and (not cleaned or l != cleaned[-1]):
             cleaned.append(l)
     return '\n'.join(cleaned)
@@ -90,7 +98,7 @@ def search_madely(query):
     return results
 
 def fetch_madely_song(url):
-    """Fetches song page and extracts clean Malayalam and Manglish lyrics."""
+    """Fetches song page and extracts clean Malayalam and Manglish lyrics without junk."""
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
     try:
         with urllib.request.urlopen(req, timeout=12) as resp:
@@ -102,15 +110,38 @@ def fetch_madely_song(url):
             if title_tag:
                 title = title_tag.get_text(strip=True)
                 title = re.sub(r'\s*(Malayalam|Manglish|Song\s+Lyrics|Lyrics|\-|\–|MADELY).*$', '', title, flags=re.IGNORECASE).strip()
+
+            # 1. Decompose all junk / advertising / FAQ containers
+            for junk in soup.find_all(['div', 'span', 'p'], class_=['divAfterLyricContent', 'LyricAdvq', 'lyric-print', 'SocialShareButtons', 'TagsContainer']):
+                junk.decompose()
+            for junk in soup.find_all(id=['divAfterLyricContent', 'Tagging', 'divUserNotes']):
+                junk.decompose()
+            for s in soup.find_all(['script', 'style']):
+                s.decompose()
             
-            sections = soup.find_all('section')
-            malayalam_text = ''
-            manglish_text = ''
-            
-            if len(sections) >= 1:
-                malayalam_text = clean_madely_section(sections[0].get_text(separator='\n'))
-            if len(sections) >= 2:
-                manglish_text = clean_madely_section(sections[1].get_text(separator='\n'))
+            # 2. Extract Malayalam (from LyricsTable or first section)
+            table = soup.find('table', class_='LyricsTable')
+            raw_mal = ''
+            if table:
+                raw_mal = table.get_text('\n', strip=True)
+            else:
+                sec0 = soup.find('section')
+                if sec0: raw_mal = sec0.get_text('\n', strip=True)
+
+            # 3. Extract Manglish (from spanManglish or second section)
+            span = soup.find('span', class_='spanManglish')
+            raw_man = ''
+            if span:
+                for d in span.find_all('div'):
+                    d.decompose()
+                raw_man = span.get_text('\n', strip=True)
+            else:
+                sections = soup.find_all('section')
+                if len(sections) > 1:
+                    raw_man = sections[1].get_text('\n', strip=True)
+
+            malayalam_text = sanitize_lyrics(raw_mal)
+            manglish_text = sanitize_lyrics(raw_man)
                 
             return {
                 'title': title,

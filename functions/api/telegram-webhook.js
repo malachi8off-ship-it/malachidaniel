@@ -586,36 +586,69 @@ async function fetchMadelySong(url) {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
     });
     if (!res.ok) return null;
-    const data = await res.text();
+    let data = await res.text();
 
     const titleMatch = data.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || data.match(/<h2[^>]*class=["'][^"']*entry-title[^"']*["'][^>]*>([\s\S]*?)<\/h2>/i);
     let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "Malayalam Song";
     title = title.replace(/\s*(Malayalam|Manglish|Song\s+Lyrics|Lyrics|-|–|MADELY).*$/i, "").trim();
 
-    const sectionRegex = /<section[^>]*>([\s\S]*?)<\/section>/gi;
-    let match;
-    const sections = [];
-    while ((match = sectionRegex.exec(data)) !== null) {
-        sections.push(match[1]);
+    // Remove junk containers from HTML before extracting
+    data = data.replace(/<div[^>]*id=["']divAfterLyricContent["'][\s\S]*?<\/div>/gi, "");
+    data = data.replace(/<div[^>]*id=["']Tagging["'][\s\S]*?<\/div>/gi, "");
+    data = data.replace(/<div[^>]*id=["']divUserNotes["'][\s\S]*?<\/div>/gi, "");
+    data = data.replace(/<div[^>]*class=["'][^"']*divAfterLyricContent[^"']*["'][\s\S]*?<\/div>/gi, "");
+    data = data.replace(/<div[^>]*class=["'][^"']*lyric-print[^"']*["'][\s\S]*?<\/div>/gi, "");
+    data = data.replace(/<script[\s\S]*?<\/script>/gi, "");
+    data = data.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+    // 1. Malayalam from LyricsTable or section 0
+    let malHtml = "";
+    const tableMatch = data.match(/<table[^>]*class=["'][^"']*LyricsTable[^"']*["'][^>]*>([\s\S]*?)<\/table>/i);
+    if (tableMatch) {
+        malHtml = tableMatch[1];
+    } else {
+        const secMatch = data.match(/<section[^>]*>([\s\S]*?)<\/section>/i);
+        if (secMatch) malHtml = secMatch[1];
+    }
+
+    // 2. Manglish from spanManglish or section 1
+    let manHtml = "";
+    const spanMatch = data.match(/<span[^>]*class=["'][^"']*spanManglish[^"']*["'][^>]*>([\s\S]*?)<\/span>/i);
+    if (spanMatch) {
+        manHtml = spanMatch[1].replace(/<div[\s\S]*?<\/div>/gi, "");
+    } else {
+        const allSecs = [...data.matchAll(/<section[^>]*>([\s\S]*?)<\/section>/gi)];
+        if (allSecs.length > 1) {
+            manHtml = allSecs[1][1];
+        }
     }
 
     function cleanSec(html) {
         const text = html.replace(/<br\s*[\/]?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<[^>]+>/g, "");
         const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-        const skip = new Set(["malayalam lyrics", "manglish lyrics", "my notes", "a", "|", "media", "loading..."]);
+        const skipPhrases = [
+            "change singing roles", "double tapping", "segway notation", "faq page",
+            "song lyrics of", "devotional lyrics", "syro malabar", "syro-malabar",
+            "syromalabar", "karaoke |", "midi |", "ലിറിക്സ്", "ലിറിക്‌സ്", "വരികൾ",
+            "all;", "male;", "female;", "reverend", "shusrooshi", "szuroochi"
+        ];
+        const skipHeaders = new Set(["malayalam lyrics", "manglish lyrics", "my notes", "a", "|", "media", "loading..."]);
         const cleaned = [];
-        for (const l of lines) {
-            if (skip.has(l.toLowerCase())) continue;
-            const stripped = l.replace(/^(M|F|A)\s*$/, "").replace(/[🔔—–-]{2,}/g, "").trim();
-            if (stripped && (!cleaned.length || stripped !== cleaned[cleaned.length - 1])) {
-                cleaned.push(stripped);
+        for (let l of lines) {
+            if (skipHeaders.has(l.toLowerCase())) continue;
+            const lower = l.toLowerCase();
+            if (skipPhrases.some(sp => lower.includes(sp))) continue;
+            l = l.replace(/^(M|F|A|R\/S|R|S)\s*$/, "").replace(/[🔔—–-]{2,}/g, "").trim();
+            if (l.split("|").length >= 3) continue;
+            if (l && (!cleaned.length || l !== cleaned[cleaned.length - 1])) {
+                cleaned.push(l);
             }
         }
         return cleaned.join("\n");
     }
 
-    const mal = sections.length > 0 ? cleanSec(sections[0]) : "";
-    const man = sections.length > 1 ? cleanSec(sections[1]) : "";
+    const mal = cleanSec(malHtml);
+    const man = cleanSec(manHtml);
 
     return { title, mal, man, url };
 }
