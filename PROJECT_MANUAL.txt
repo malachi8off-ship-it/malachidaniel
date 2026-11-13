@@ -92,6 +92,20 @@ For Google Search indexing and browser tabs, the root directory must contain the
       automatically passes missing songs into the `omni_fetcher` waterfall logic.
     - Command: python auto_discover.py
 
+[9] curator.py
+    - Purpose: Intelligent Malayalam & Hindi Worship Ingestion Engine & Vision OCR.
+    - What it does:
+      (1) Bypasses browser copy-protection on madely.us to fetch clean Malayalam + Manglish 
+          lyrics across 8,200+ indexed songs.
+      (2) Searches and transcribes authentic Hindi Christian worship songs (Yeshua Ministries, 
+          Bridge Music, Amit Kamble, Sheldon Bangera, etc.).
+      (3) Gemini Vision OCR: Drag-and-drop any songbook photo, screenshot, or WhatsApp graphic 
+          to transcribe lyrics automatically into Unicode text.
+      (4) Human-in-the-loop review: Shows title, artist, and lyric preview with a 1-click [y/n] 
+          prompt, fetches Apple Music IDs via iTunes API, generates theological meaning, and 
+          formats files into `raw_lyrics/`.
+    - Command: python curator.py
+
 === C. AI PIPELINE & PROCESSING ===
 
 [9] bulk_contextualizer.py
